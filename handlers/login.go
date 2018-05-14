@@ -44,7 +44,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Add("cho-token", uuid.String())
 	b, err := ioutil.ReadAll(r.Body)
-	pw := packets.NewWriter()
+	pw := packets.NewWriter(&objects.Token{})
 	if err != nil {
 		panic(err)
 	}
@@ -63,6 +63,8 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	t := objects.NewToken(uuid, 0, 0, *u)
+
+	pw.SetToken(&t)
 
 	pw.ProtocolVersion(19)
 	pw.UserID(int32(t.User.ID))

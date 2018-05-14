@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"time"
 
+	"git.gigamons.de/Gigamons/Kaoiji/tools/usertools"
+
 	"git.gigamons.de/Gigamons/Kaoiji/constants"
 	"git.gigamons.de/Gigamons/Kaoiji/constants/packets"
 
@@ -38,8 +40,29 @@ func HandlePackets(w http.ResponseWriter, r *http.Request, t *objects.Token) {
 			t.LastPing = time.Now()
 		case constants.ClientReceiveUpdates:
 			pckt.Write(public.SendUserStats(t, true))
+		case constants.ClientChannelJoin:
+			yw := packets.NewWriter(t)
+			xw := objects.ChannelInfo{}
+			packets.UnmarshalBinary(r, &xw)
+			yw.JoinChannel(xw.ChannelName)
+			pckt.Write(yw.Bytes())
 		case 68:
-			fmt.Println(packets.ReadBeatmaps(r))
+			//fmt.Println(packets.ReadBeatmaps(r))
+
+		case constants.ClientFriendAdd:
+			i, err := packets.RInt32(r)
+			if err != nil {
+				fmt.Println(err)
+			}
+			packets.AddFriend(&t.User, usertools.GetUser(int(i)))
+
+		case constants.ClientFriendRemove:
+			i, err := packets.RInt32(r)
+			if err != nil {
+				fmt.Println(err)
+			}
+			packets.RemoveFriend(&t.User, usertools.GetUser(int(i)))
+
 		case constants.ClientUserStatsRequest: // 84
 			i, err := packets.RIntArray(r)
 			if err != nil {
@@ -50,7 +73,7 @@ func HandlePackets(w http.ResponseWriter, r *http.Request, t *objects.Token) {
 			}
 		case constants.ClientUserPresenceRequest: // 97
 			i, err := packets.RIntArray(r)
-			yw := packets.NewWriter()
+			yw := packets.NewWriter(t)
 			if err != nil {
 				fmt.Println(err)
 			}

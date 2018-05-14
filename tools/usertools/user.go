@@ -151,3 +151,25 @@ func GetLeaderboardPosition(u constants.User, playMode int8) int32 {
 
 	return 0
 }
+
+func GetFriends(u *constants.User) []int32 {
+	var userids []int32
+	db := global.DB
+
+	rows, err := db.Query("SELECT friendid FROM friends WHERE userid = ?", u.ID)
+	if err != nil {
+		panic(err)
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		var useridstr int32
+		err := rows.Scan(&useridstr)
+		userids = append(userids, useridstr)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	return userids
+}
