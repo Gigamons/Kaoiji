@@ -13,4 +13,4 @@ install:
   - go get -d -v github.com/Gigamons/Kaoiji
 
 test_script:
-  - go build -v $GOPATH/src/Gigamons/Kaoiji/kaoiji.go
+  - go build -v /home/appveyor/projects/kaoiji/kaoiji.go
