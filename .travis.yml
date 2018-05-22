@@ -1,0 +1,9 @@
+language: go
+go:
+  - 1.10.x
+
+script:
+  - go build -v
+
+after_success:
+  curl -sL https://git.io/goreleaser | bash
