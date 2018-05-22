@@ -14,7 +14,8 @@ import (
 
 	"github.com/Gigamons/Kaoiji/constants"
 	"github.com/Gigamons/Kaoiji/objects"
-	"github.com/Gigamons/Kaoiji/tools/usertools"
+	"github.com/Gigamons/common/helpers"
+	"github.com/Gigamons/common/tools/usertools"
 
 	"github.com/Gigamons/Kaoiji/packets"
 )
@@ -26,7 +27,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		if err := recover(); err != nil {
 			w.Header().Add("cho-token", "error")
 			p := packets.NewPacket(constants.BanchoLoginReply)
-			p.SetPacketData(packets.Int32(constants.LoginException))
+			p.SetPacketData(helpers.Int32(constants.LoginException))
 			w.Write(p.ToByteArray())
 
 			fmt.Println("------------ERROR------------")
@@ -64,17 +65,17 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	t := objects.NewToken(uuid, 0, 0, *u)
 
-	pw.SetToken(&t)
+	pw.SetToken(t)
 
 	pw.ProtocolVersion(19)
 	pw.UserID(int32(t.User.ID))
-	pw.UserPresence(&t)
+	pw.UserPresence(t)
 	pw.SendFriendlist()
 	pw.PresenceBundle()
 	pw.LoginPermissions()
 	pw.AutoJoinChannel()
 	pw.ChannelAvaible()
-	pw.Write(public.SendUserStats(&t, true))
+	pw.Write(public.SendUserStats(t, true))
 
 	w.Write(pw.Bytes())
 }

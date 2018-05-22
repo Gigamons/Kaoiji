@@ -1,17 +1,17 @@
 package public
 
 import (
-	"github.com/Gigamons/Kaoiji/constants/packets"
+	"github.com/Gigamons/Kaoiji/constants"
 	"github.com/Gigamons/Kaoiji/handlers/private"
-	"github.com/Gigamons/Kaoiji/helpers"
 	"github.com/Gigamons/Kaoiji/objects"
 	"github.com/Gigamons/Kaoiji/packets"
-	"github.com/Gigamons/Kaoiji/tools/usertools"
+	"github.com/Gigamons/common/helpers"
+	"github.com/Gigamons/common/tools/usertools"
 )
 
 func SendUserStats(t *objects.Token, forced bool) []byte {
 	w := packets.Writer{}
-	x := packetconst.UserStats{}
+	x := constants.UserStatsStruct{}
 	if forced {
 		private.SetUserStatus(t)
 	}

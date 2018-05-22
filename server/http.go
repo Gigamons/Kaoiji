@@ -7,7 +7,7 @@ import (
 	"runtime/debug"
 	"strconv"
 
-	"github.com/Gigamons/Kaoiji/tools/usertools"
+	"github.com/Gigamons/common/tools/usertools"
 	"github.com/google/uuid"
 
 	"github.com/Gigamons/Kaoiji/handlers"

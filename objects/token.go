@@ -5,20 +5,19 @@ import (
 	"time"
 
 	"github.com/Gigamons/Kaoiji/constants"
-	"github.com/Gigamons/Kaoiji/constants/packets"
-	"github.com/Gigamons/Kaoiji/constants/privileges"
 	"github.com/Gigamons/Kaoiji/global"
-	"github.com/Gigamons/Kaoiji/helpers"
+	"github.com/Gigamons/common/consts"
+	"github.com/Gigamons/common/helpers"
 	"github.com/google/uuid"
 )
 
 // Token data
 type Token struct {
 	token  string
-	User   constants.User
+	User   consts.User
 	Status struct {
 		Torney  bool
-		Beatmap packetconst.ClientSendUserStatus
+		Beatmap constants.ClientSendUserStatusStruct
 		Info    struct {
 			Permissions int8
 			ClientPerm  int8
@@ -29,15 +28,16 @@ type Token struct {
 			Rank        int32
 		}
 	}
-	Leaderboard constants.Leaderboard
+	Leaderboard consts.Leaderboard
 	LastPing    time.Time
 	Output      bytes.Buffer
 }
 
-var TOKENS []Token
+// TOKENS Global Variable for Token array.
+var TOKENS []*Token
 
 // NewToken returns a Token that has a Token with a Token
-func NewToken(uuid uuid.UUID, lon float64, lat float64, u constants.User) Token {
+func NewToken(uuid uuid.UUID, lon float64, lat float64, u consts.User) *Token {
 	t := Token{}
 	t.token = uuid.String()
 	t.Status.Info.Lat = lat
@@ -48,26 +48,27 @@ func NewToken(uuid uuid.UUID, lon float64, lat float64, u constants.User) Token 
 	t.Status.Info.ClientPerm |= constants.Userperm
 	t.Status.Info.Permissions |= constants.Userperm
 
-	if helpers.HasPrivileges(privileges.BAT, u) {
+	if helpers.HasPrivileges(consts.BAT, u) {
 		t.Status.Info.Permissions |= constants.Administrator
 		t.Status.Info.ClientPerm |= constants.BAT
 	}
 	if global.CONFIG.Server.FreeDirect {
 		t.Status.Info.ClientPerm |= constants.Supporter
 	}
-	if helpers.HasPrivileges(privileges.Supporter, u) {
+	if helpers.HasPrivileges(consts.Supporter, u) {
 		t.Status.Info.Permissions |= constants.Supporter
 	}
-	if helpers.HasPrivileges(privileges.AdminDeveloper, u) {
+	if helpers.HasPrivileges(consts.AdminDeveloper, u) {
 		t.Status.Info.Permissions |= constants.Developer
 		t.Status.Info.ClientPerm |= constants.Developer
 	}
 
-	TOKENS = append(TOKENS, t)
+	TOKENS = append(TOKENS, &t)
 
-	return t
+	return &t
 }
 
+// TokenExists return a boolean, true if exists else false
 func TokenExists(token string) bool {
 	for i := 0; i < len(TOKENS); i++ {
 		if TOKENS[i].token == token {
@@ -77,25 +78,27 @@ func TokenExists(token string) bool {
 	return false
 }
 
+// GetToken Returns a UserToken from a String if not exists return nil
 func GetToken(token string) *Token {
 	for i := 0; i < len(TOKENS); i++ {
 		if TOKENS[i].token == token {
-			return &TOKENS[i]
+			return TOKENS[i]
 		}
 	}
 	return nil
 }
 
+// GetTokenByID Returns a UserToken from an UserID if not exists return nil
 func GetTokenByID(userid int32) *Token {
 	for i := 0; i < len(TOKENS); i++ {
 		if TOKENS[i].User.ID == userid {
-			return &TOKENS[i]
+			return TOKENS[i]
 		}
 	}
 	return nil
 }
 
-// https://stackoverflow.com/questions/16466320/is-there-a-way-to-do-repetitive-tasks-at-intervals-in-golang/16466581
+// StartTimeoutChecker https://stackoverflow.com/questions/16466320/is-there-a-way-to-do-repetitive-tasks-at-intervals-in-golang/16466581
 func StartTimeoutChecker() {
 	ticker := time.NewTicker(5 * time.Second)
 	quit := make(chan struct{})

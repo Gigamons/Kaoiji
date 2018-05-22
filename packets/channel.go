@@ -2,9 +2,9 @@ package packets
 
 import (
 	"github.com/Gigamons/Kaoiji/constants"
-	"github.com/Gigamons/Kaoiji/constants/privileges"
-	"github.com/Gigamons/Kaoiji/helpers"
 	"github.com/Gigamons/Kaoiji/objects"
+	"github.com/Gigamons/common/consts"
+	"github.com/Gigamons/common/helpers"
 )
 
 func (w *Writer) AutoJoinChannel() {
@@ -17,11 +17,11 @@ func (w *Writer) AutoJoinChannel() {
 
 func (w *Writer) ChannelAvaible() {
 	for i := 0; i < len(objects.CHANNELS); i++ {
-		if !helpers.HasPrivileges(privileges.AdminChatMod, w._token.User) && objects.CHANNELS[i].CPerm.AdminOnly {
+		if !helpers.HasPrivileges(consts.AdminChatMod, w._token.User) && objects.CHANNELS[i].CPerm.AdminOnly {
 			continue
 		}
 		p := NewPacket(constants.BanchoChannelAvailable)
-		p.SetPacketData(MarshalBinary(&objects.CHANNELS[i].CInfo))
+		p.SetPacketData(helpers.MarshalBinary(&objects.CHANNELS[i].CInfo))
 		w.Write(p.ToByteArray())
 	}
 }
@@ -36,12 +36,12 @@ func (w *Writer) JoinChannel(channelname string) {
 
 func (w *Writer) JoinChannelSuccess(channelname string) {
 	p := NewPacket(constants.BanchoChannelJoinSuccess)
-	p.SetPacketData(BString(channelname))
+	p.SetPacketData(helpers.BString(channelname))
 	w.Write(p.ToByteArray())
 }
 
 func (w *Writer) KickOutOfChannel(channelname string) {
 	p := NewPacket(constants.BanchoChannelRevoked)
-	p.SetPacketData(BString(channelname))
+	p.SetPacketData(helpers.BString(channelname))
 	w.Write(p.ToByteArray())
 }

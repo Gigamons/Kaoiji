@@ -1,6 +1,6 @@
-package packetconst
+package constants
 
-type ClientSendUserStatus struct {
+type ClientSendUserStatusStruct struct {
 	Status          int8
 	StatusText      string
 	BeatmapChecksum string

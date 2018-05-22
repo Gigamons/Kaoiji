@@ -1,5 +1,9 @@
 package constants
 
+import (
+	"github.com/Gigamons/common/consts"
+)
+
 // Config is for the config.yml file
 type Config struct {
 	Server struct {
@@ -8,13 +12,7 @@ type Config struct {
 		FreeDirect bool
 		Debug      bool
 	}
-	MySQL struct {
-		Hostname string
-		Port     int
-		Username string
-		Password string
-		Database string
-	}
+	MySQL consts.MySQLConf
 	Redis struct {
 		Hostname string
 		Port     int

@@ -1,6 +1,6 @@
-package packetconst
+package constants
 
-type Message struct {
+type MessageStruct struct {
 	Username string
 	Message  string
 	Target   string

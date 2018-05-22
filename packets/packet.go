@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+
+	"github.com/Gigamons/common/helpers"
 )
 
 // Packet struct is simply a packet
@@ -42,15 +44,15 @@ func GetPackets(pkg []byte) []Packet {
 	b := bytes.NewReader(pkg)
 
 	for {
-		PacketID, err := RInt16(b)
+		PacketID, err := helpers.RInt16(b)
 		if err != nil {
 			break
 		}
-		_, err = RInt8(b)
+		_, err = helpers.RInt8(b)
 		if err != nil {
 			break
 		}
-		PacketLength, err := RInt32(b)
+		PacketLength, err := helpers.RInt32(b)
 		if err != nil {
 			break
 		}

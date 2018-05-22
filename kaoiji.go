@@ -4,14 +4,17 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/Gigamons/common/consts"
+
+	"github.com/Gigamons/Kaoiji/constants"
 	"github.com/Gigamons/Kaoiji/global"
-	"github.com/Gigamons/Kaoiji/helpers"
 	"github.com/Gigamons/Kaoiji/server"
+	"github.com/Gigamons/common/helpers"
 )
 
 func init() {
 	if _, err := os.Stat("config.yml"); os.IsNotExist(err) {
-		helpers.CreateConfig()
+		helpers.CreateConfig("config", constants.Config{MySQL: consts.MySQLConf{Database: "gigamons", Hostname: "localhost", Port: 3306, Username: "root"}})
 		fmt.Println("I've just created a config.yml! please edit!")
 		os.Exit(0)
 	}
@@ -19,17 +22,17 @@ func init() {
 
 func main() {
 	var err error
+	var conf constants.Config
 
-	global.DB, err = helpers.Connect(helpers.GetConfig())
-	if err != nil {
+	helpers.GetConfig("config", &conf)
+
+	helpers.Connect(conf.MySQL)
+	if err = helpers.DB.Ping(); err != nil {
 		panic(err)
 	}
-	if err = helpers.CheckConnection(global.DB); err != nil {
-		panic(err)
-	}
-	global.CONFIG = helpers.GetConfig()
+	global.CONFIG = &conf
 
-	defer global.DB.Close()
+	defer helpers.DB.Close()
 
 	server.StartServer(5001)
 }

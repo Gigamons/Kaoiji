@@ -1,6 +1,6 @@
-package packetconst
+package constants
 
-type UserPresence struct {
+type UserPresenceStruct struct {
 	UserID      int32
 	Username    string
 	Timezone    int8

@@ -3,6 +3,7 @@ package packets
 import (
 	"github.com/Gigamons/Kaoiji/constants"
 	"github.com/Gigamons/Kaoiji/objects"
+	"github.com/Gigamons/common/helpers"
 )
 
 func (w *Writer) PresenceBundle() {
@@ -11,6 +12,6 @@ func (w *Writer) PresenceBundle() {
 		t = append(t, objects.TOKENS[i].User.ID)
 	}
 	p := NewPacket(constants.BanchoUserPresenceBundle)
-	p.SetPacketData(IntArray(t))
+	p.SetPacketData(helpers.IntArray(t))
 	w.Write(p.ToByteArray())
 }

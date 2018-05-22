@@ -4,19 +4,20 @@ import (
 	"fmt"
 
 	"github.com/Gigamons/Kaoiji/constants"
-	"github.com/Gigamons/Kaoiji/global"
-	"github.com/Gigamons/Kaoiji/tools/usertools"
+	"github.com/Gigamons/common/consts"
+	"github.com/Gigamons/common/helpers"
+	"github.com/Gigamons/common/tools/usertools"
 )
 
 func (w *Writer) SendFriendlist() {
 	flist := usertools.GetFriends(&w._token.User)
 	p := NewPacket(constants.BanchoFriendsList)
-	p.SetPacketData(IntArray(flist))
+	p.SetPacketData(helpers.IntArray(flist))
 	w.Write(p.ToByteArray())
 }
 
-func AddFriend(u *constants.User, f *constants.User) bool {
-	db := global.DB
+func AddFriend(u *consts.User, f *consts.User) bool {
+	db := helpers.DB
 	if u == nil || f == nil {
 		return false
 	}
@@ -28,8 +29,8 @@ func AddFriend(u *constants.User, f *constants.User) bool {
 	return true
 }
 
-func RemoveFriend(u *constants.User, f *constants.User) bool {
-	db := global.DB
+func RemoveFriend(u *consts.User, f *consts.User) bool {
+	db := helpers.DB
 
 	if u == nil || f == nil {
 		return false

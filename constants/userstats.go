@@ -1,6 +1,6 @@
-package packetconst
+package constants
 
-type UserStats struct {
+type UserStatsStruct struct {
 	UserID          int32
 	Status          int8
 	StatusText      string

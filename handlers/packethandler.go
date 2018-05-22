@@ -8,10 +8,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Gigamons/Kaoiji/tools/usertools"
+	"github.com/Gigamons/common/helpers"
+	"github.com/Gigamons/common/tools/usertools"
 
 	"github.com/Gigamons/Kaoiji/constants"
-	"github.com/Gigamons/Kaoiji/constants/packets"
 
 	"github.com/Gigamons/Kaoiji/handlers/public"
 	"github.com/Gigamons/Kaoiji/objects"
@@ -30,8 +30,8 @@ func HandlePackets(w http.ResponseWriter, r *http.Request, t *objects.Token) {
 		r := bytes.NewReader(pkg.PacketData)
 		switch pkg.PacketID {
 		case constants.ClientSendUserStatus: // 0
-			x := packetconst.ClientSendUserStatus{}
-			packets.UnmarshalBinary(r, &x)
+			x := constants.ClientSendUserStatusStruct{}
+			helpers.UnmarshalBinary(r, &x)
 			t.Status.Beatmap = x
 			pckt.Write(public.SendUserStats(t, false))
 		case constants.ClientRequestStatusUpdate: // 3
@@ -43,28 +43,28 @@ func HandlePackets(w http.ResponseWriter, r *http.Request, t *objects.Token) {
 		case constants.ClientChannelJoin:
 			yw := packets.NewWriter(t)
 			xw := objects.ChannelInfo{}
-			packets.UnmarshalBinary(r, &xw)
+			helpers.UnmarshalBinary(r, &xw)
 			yw.JoinChannel(xw.ChannelName)
 			pckt.Write(yw.Bytes())
 		case 68:
 			//fmt.Println(packets.ReadBeatmaps(r))
 
 		case constants.ClientFriendAdd:
-			i, err := packets.RInt32(r)
+			i, err := helpers.RInt32(r)
 			if err != nil {
 				fmt.Println(err)
 			}
 			packets.AddFriend(&t.User, usertools.GetUser(int(i)))
 
 		case constants.ClientFriendRemove:
-			i, err := packets.RInt32(r)
+			i, err := helpers.RInt32(r)
 			if err != nil {
 				fmt.Println(err)
 			}
 			packets.RemoveFriend(&t.User, usertools.GetUser(int(i)))
 
 		case constants.ClientUserStatsRequest: // 84
-			i, err := packets.RIntArray(r)
+			i, err := helpers.RIntArray(r)
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -72,7 +72,7 @@ func HandlePackets(w http.ResponseWriter, r *http.Request, t *objects.Token) {
 				pckt.Write(public.SendUserStats(objects.GetTokenByID(i[y]), false))
 			}
 		case constants.ClientUserPresenceRequest: // 97
-			i, err := packets.RIntArray(r)
+			i, err := helpers.RIntArray(r)
 			yw := packets.NewWriter(t)
 			if err != nil {
 				fmt.Println(err)
