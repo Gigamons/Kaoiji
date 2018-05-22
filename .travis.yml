@@ -3,7 +3,7 @@ go:
   - 1.10.x
 
 script:
-  - go build -v
+  - go build -v kaoiji.go
 
 after_success:
   - test -n "$TRAVIS_TAG"
