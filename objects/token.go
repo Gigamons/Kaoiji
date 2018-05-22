@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"time"
 
-	"git.gigamons.de/Gigamons/Kaoiji/constants"
-	"git.gigamons.de/Gigamons/Kaoiji/constants/packets"
-	"git.gigamons.de/Gigamons/Kaoiji/constants/privileges"
-	"git.gigamons.de/Gigamons/Kaoiji/global"
-	"git.gigamons.de/Gigamons/Kaoiji/helpers"
+	"github.com/Gigamons/Kaoiji/constants"
+	"github.com/Gigamons/Kaoiji/constants/packets"
+	"github.com/Gigamons/Kaoiji/constants/privileges"
+	"github.com/Gigamons/Kaoiji/global"
+	"github.com/Gigamons/Kaoiji/helpers"
 	"github.com/google/uuid"
 )
 

@@ -3,7 +3,7 @@ package helpers
 import (
 	"io/ioutil"
 
-	"git.gigamons.de/Gigamons/Kaoiji/constants"
+	"github.com/Gigamons/Kaoiji/constants"
 	"gopkg.in/yaml.v2"
 )
 

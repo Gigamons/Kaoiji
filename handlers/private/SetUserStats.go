@@ -1,8 +1,8 @@
 package private
 
 import (
-	"git.gigamons.de/Gigamons/Kaoiji/objects"
-	"git.gigamons.de/Gigamons/Kaoiji/tools/usertools"
+	"github.com/Gigamons/Kaoiji/objects"
+	"github.com/Gigamons/Kaoiji/tools/usertools"
 )
 
 func SetUserStatus(t *objects.Token) {

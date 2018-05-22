@@ -1,7 +1,7 @@
 package packets
 
 import (
-	"git.gigamons.de/Gigamons/Kaoiji/constants"
+	"github.com/Gigamons/Kaoiji/constants"
 )
 
 func (w *Writer) BeatmapInfoReply() {

@@ -1,9 +1,9 @@
 package packets
 
 import (
-	"git.gigamons.de/Gigamons/Kaoiji/constants"
-	"git.gigamons.de/Gigamons/Kaoiji/constants/packets"
-	"git.gigamons.de/Gigamons/Kaoiji/objects"
+	"github.com/Gigamons/Kaoiji/constants"
+	"github.com/Gigamons/Kaoiji/constants/packets"
+	"github.com/Gigamons/Kaoiji/objects"
 )
 
 // UserPresence Sends a User

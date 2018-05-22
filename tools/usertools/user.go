@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"git.gigamons.de/Gigamons/Kaoiji/constants"
-	"git.gigamons.de/Gigamons/Kaoiji/global"
+	"github.com/Gigamons/Kaoiji/constants"
+	"github.com/Gigamons/Kaoiji/global"
 )
 
 // GetUserID Returns a UserID of the given UserName

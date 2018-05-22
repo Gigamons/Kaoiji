@@ -1,8 +1,8 @@
 package packets
 
 import (
-	"git.gigamons.de/Gigamons/Kaoiji/constants"
-	"git.gigamons.de/Gigamons/Kaoiji/constants/packets"
+	"github.com/Gigamons/Kaoiji/constants"
+	"github.com/Gigamons/Kaoiji/constants/packets"
 )
 
 func (w *Writer) SendUserStats(x packetconst.UserStats) {

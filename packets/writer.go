@@ -3,7 +3,7 @@ package packets
 import (
 	"bytes"
 
-	"git.gigamons.de/Gigamons/Kaoiji/objects"
+	"github.com/Gigamons/Kaoiji/objects"
 )
 
 // Writer is a writer.

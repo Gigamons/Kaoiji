@@ -1,8 +1,8 @@
 package packets
 
 import (
-	"git.gigamons.de/Gigamons/Kaoiji/constants"
-	"git.gigamons.de/Gigamons/Kaoiji/objects"
+	"github.com/Gigamons/Kaoiji/constants"
+	"github.com/Gigamons/Kaoiji/objects"
 )
 
 func (w *Writer) PresenceBundle() {

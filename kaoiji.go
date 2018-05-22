@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	"git.gigamons.de/Gigamons/Kaoiji/global"
-	"git.gigamons.de/Gigamons/Kaoiji/helpers"
-	"git.gigamons.de/Gigamons/Kaoiji/server"
+	"github.com/Gigamons/Kaoiji/global"
+	"github.com/Gigamons/Kaoiji/helpers"
+	"github.com/Gigamons/Kaoiji/server"
 )
 
 func init() {

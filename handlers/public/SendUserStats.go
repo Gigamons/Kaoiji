@@ -1,12 +1,12 @@
 package public
 
 import (
-	"git.gigamons.de/Gigamons/Kaoiji/constants/packets"
-	"git.gigamons.de/Gigamons/Kaoiji/handlers/private"
-	"git.gigamons.de/Gigamons/Kaoiji/helpers"
-	"git.gigamons.de/Gigamons/Kaoiji/objects"
-	"git.gigamons.de/Gigamons/Kaoiji/packets"
-	"git.gigamons.de/Gigamons/Kaoiji/tools/usertools"
+	"github.com/Gigamons/Kaoiji/constants/packets"
+	"github.com/Gigamons/Kaoiji/handlers/private"
+	"github.com/Gigamons/Kaoiji/helpers"
+	"github.com/Gigamons/Kaoiji/objects"
+	"github.com/Gigamons/Kaoiji/packets"
+	"github.com/Gigamons/Kaoiji/tools/usertools"
 )
 
 func SendUserStats(t *objects.Token, forced bool) []byte {

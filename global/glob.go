@@ -3,7 +3,7 @@ package global
 import (
 	"database/sql"
 
-	"git.gigamons.de/Gigamons/Kaoiji/constants"
+	"github.com/Gigamons/Kaoiji/constants"
 )
 
 var DB *sql.DB

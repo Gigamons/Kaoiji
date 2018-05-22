@@ -1,7 +1,7 @@
 package packets
 
 import (
-	"git.gigamons.de/Gigamons/Kaoiji/constants"
+	"github.com/Gigamons/Kaoiji/constants"
 )
 
 // LoginPermissions sends the "Client" permissions to the client.

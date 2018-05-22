@@ -8,15 +8,15 @@ import (
 	"strconv"
 	"strings"
 
-	"git.gigamons.de/Gigamons/Kaoiji/handlers/public"
+	"github.com/Gigamons/Kaoiji/handlers/public"
 
 	"github.com/google/uuid"
 
-	"git.gigamons.de/Gigamons/Kaoiji/constants"
-	"git.gigamons.de/Gigamons/Kaoiji/objects"
-	"git.gigamons.de/Gigamons/Kaoiji/tools/usertools"
+	"github.com/Gigamons/Kaoiji/constants"
+	"github.com/Gigamons/Kaoiji/objects"
+	"github.com/Gigamons/Kaoiji/tools/usertools"
 
-	"git.gigamons.de/Gigamons/Kaoiji/packets"
+	"github.com/Gigamons/Kaoiji/packets"
 )
 
 // LoginHandler main Login Handler to Handle logins... Makes sense!

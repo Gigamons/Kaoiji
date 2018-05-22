@@ -1,7 +1,7 @@
 package helpers
 
 import (
-	"git.gigamons.de/Gigamons/Kaoiji/constants"
+	"github.com/Gigamons/Kaoiji/constants"
 )
 
 // CalculateAccuracy calculates every playModes accuracy.

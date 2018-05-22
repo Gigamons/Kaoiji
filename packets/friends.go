@@ -3,9 +3,9 @@ package packets
 import (
 	"fmt"
 
-	"git.gigamons.de/Gigamons/Kaoiji/constants"
-	"git.gigamons.de/Gigamons/Kaoiji/global"
-	"git.gigamons.de/Gigamons/Kaoiji/tools/usertools"
+	"github.com/Gigamons/Kaoiji/constants"
+	"github.com/Gigamons/Kaoiji/global"
+	"github.com/Gigamons/Kaoiji/tools/usertools"
 )
 
 func (w *Writer) SendFriendlist() {

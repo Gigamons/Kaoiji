@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"git.gigamons.de/Gigamons/Kaoiji/constants"
+	"github.com/Gigamons/Kaoiji/constants"
 
 	// MySQL Driver
 	_ "github.com/go-sql-driver/mysql"

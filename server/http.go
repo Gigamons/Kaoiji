@@ -7,11 +7,11 @@ import (
 	"runtime/debug"
 	"strconv"
 
-	"git.gigamons.de/Gigamons/Kaoiji/tools/usertools"
+	"github.com/Gigamons/Kaoiji/tools/usertools"
 	"github.com/google/uuid"
 
-	"git.gigamons.de/Gigamons/Kaoiji/handlers"
-	"git.gigamons.de/Gigamons/Kaoiji/objects"
+	"github.com/Gigamons/Kaoiji/handlers"
+	"github.com/Gigamons/Kaoiji/objects"
 	"github.com/gorilla/mux"
 )
 

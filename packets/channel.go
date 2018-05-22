@@ -1,10 +1,10 @@
 package packets
 
 import (
-	"git.gigamons.de/Gigamons/Kaoiji/constants"
-	"git.gigamons.de/Gigamons/Kaoiji/constants/privileges"
-	"git.gigamons.de/Gigamons/Kaoiji/helpers"
-	"git.gigamons.de/Gigamons/Kaoiji/objects"
+	"github.com/Gigamons/Kaoiji/constants"
+	"github.com/Gigamons/Kaoiji/constants/privileges"
+	"github.com/Gigamons/Kaoiji/helpers"
+	"github.com/Gigamons/Kaoiji/objects"
 )
 
 func (w *Writer) AutoJoinChannel() {

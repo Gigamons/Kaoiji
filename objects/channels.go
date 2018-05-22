@@ -1,8 +1,8 @@
 package objects
 
 import (
-	"git.gigamons.de/Gigamons/Kaoiji/constants/privileges"
-	"git.gigamons.de/Gigamons/Kaoiji/helpers"
+	"github.com/Gigamons/Kaoiji/constants/privileges"
+	"github.com/Gigamons/Kaoiji/helpers"
 )
 
 type ChannelInfo struct {

@@ -1,6 +1,6 @@
 package helpers
 
-import "git.gigamons.de/Gigamons/Kaoiji/constants"
+import "github.com/Gigamons/Kaoiji/constants"
 
 // HasPrivileges if user has those permissions else not!
 func HasPrivileges(p int, u constants.User) bool {
