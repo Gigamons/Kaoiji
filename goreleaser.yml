@@ -8,7 +8,7 @@ build:
     - amd64
     - arm
     - arm64
-    
+
 archive:
   replacements:
     386: i368
