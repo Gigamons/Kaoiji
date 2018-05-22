@@ -10,8 +10,7 @@ init:
 stack: go 1.10, mysql, redis
 
 install:
-  - go get github.com/Gigamons/Kaoiji
-  - go get $GOPATH/src/Gigamons/Kaoiji/...
+  - go get -d -v github.com/Gigamons/Kaoiji
 
 test_script:
   - go build -v $GOPATH/src/Gigamons/Kaoiji/kaoiji.go
