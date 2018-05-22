@@ -1,0 +1,18 @@
+image: ubuntu
+
+version: "{build}"
+
+clone_folder: /gigamons/src/github.com/Gigamons/Kaoiji
+
+environment:
+  GOPATH: /gigamons
+
+build: off
+
+init:
+  - git config --global core.autocrlf input
+
+stack: go 1.10, mysql, redis
+
+test_script:
+  - go build -v /gigamons/src/github.com/Gigamons/Kaoiji/kaoiji.go
