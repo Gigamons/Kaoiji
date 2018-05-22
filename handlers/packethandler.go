@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -18,6 +19,64 @@ import (
 	"github.com/Gigamons/Kaoiji/packets"
 )
 
+// sendUserStatus sends the UserStatus
+func sendUserStatus(r io.Reader, pckt *bytes.Buffer, t *objects.Token) {
+	x := constants.ClientSendUserStatusStruct{}
+	helpers.UnmarshalBinary(r, &x)
+	t.Status.Beatmap = x
+	pckt.Write(public.SendUserStats(t, false))
+}
+
+// joinChannel sends a Join successfull/fail to the Client.
+func joinChannel(r io.Reader, pckt *bytes.Buffer, t *objects.Token) {
+	yw := packets.NewWriter(t)
+	xw := objects.ChannelInfo{}
+	helpers.UnmarshalBinary(r, &xw)
+	yw.JoinChannel(xw.ChannelName)
+	pckt.Write(yw.Bytes())
+}
+
+// addFriend adds a Friend ofc!
+func addFriend(r io.Reader, t *objects.Token) {
+	i, err := helpers.RInt32(r)
+	if err != nil {
+		fmt.Println(err)
+	}
+	packets.AddFriend(&t.User, usertools.GetUser(int(i)))
+}
+
+// removeFriend removes a Friend ofc!
+func removeFriend(r io.Reader, t *objects.Token) {
+	i, err := helpers.RInt32(r)
+	if err != nil {
+		fmt.Println(err)
+	}
+	packets.RemoveFriend(&t.User, usertools.GetUser(int(i)))
+}
+
+func updateUserStats(r io.Reader, pckt *bytes.Buffer) {
+	i, err := helpers.RIntArray(r)
+	if err != nil {
+		fmt.Println(err)
+	}
+	for y := 0; y < len(i); y++ {
+		pckt.Write(public.SendUserStats(objects.GetTokenByID(i[y]), false))
+	}
+}
+
+func sendUserPresence(r io.Reader, pckt *bytes.Buffer, t *objects.Token) {
+	i, err := helpers.RIntArray(r)
+	yw := packets.NewWriter(t)
+	if err != nil {
+		fmt.Println(err)
+	}
+	for y := 0; y < len(i); y++ {
+		yw.UserPresence(objects.GetTokenByID(i[y]))
+	}
+	pckt.Write(yw.Bytes())
+}
+
+// HandlePackets is the Main Packet handler.
 func HandlePackets(w http.ResponseWriter, r *http.Request, t *objects.Token) {
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -29,67 +88,48 @@ func HandlePackets(w http.ResponseWriter, r *http.Request, t *objects.Token) {
 		pkg := pkgs[i]
 		r := bytes.NewReader(pkg.PacketData)
 		switch pkg.PacketID {
-		case constants.ClientSendUserStatus: // 0
-			x := constants.ClientSendUserStatusStruct{}
-			helpers.UnmarshalBinary(r, &x)
-			t.Status.Beatmap = x
-			pckt.Write(public.SendUserStats(t, false))
-		case constants.ClientRequestStatusUpdate: // 3
+
+		case constants.ClientSendUserStatus:
+			sendUserStatus(r, pckt, t)
+
+		case constants.ClientRequestStatusUpdate:
 			pckt.Write(public.SendUserStats(t, true))
-		case constants.ClientPong: // 4
+
+		case constants.ClientPong:
 			t.LastPing = time.Now()
+
 		case constants.ClientReceiveUpdates:
 			pckt.Write(public.SendUserStats(t, true))
+
 		case constants.ClientChannelJoin:
-			yw := packets.NewWriter(t)
-			xw := objects.ChannelInfo{}
-			helpers.UnmarshalBinary(r, &xw)
-			yw.JoinChannel(xw.ChannelName)
-			pckt.Write(yw.Bytes())
-		case 68:
-			//fmt.Println(packets.ReadBeatmaps(r))
+			joinChannel(r, pckt, t)
 
 		case constants.ClientFriendAdd:
-			i, err := helpers.RInt32(r)
-			if err != nil {
-				fmt.Println(err)
-			}
-			packets.AddFriend(&t.User, usertools.GetUser(int(i)))
+			addFriend(r, t)
 
 		case constants.ClientFriendRemove:
-			i, err := helpers.RInt32(r)
-			if err != nil {
-				fmt.Println(err)
-			}
-			packets.RemoveFriend(&t.User, usertools.GetUser(int(i)))
+			removeFriend(r, t)
 
-		case constants.ClientUserStatsRequest: // 84
-			i, err := helpers.RIntArray(r)
-			if err != nil {
-				fmt.Println(err)
-			}
-			for y := 0; y < len(i); y++ {
-				pckt.Write(public.SendUserStats(objects.GetTokenByID(i[y]), false))
-			}
-		case constants.ClientUserPresenceRequest: // 97
-			i, err := helpers.RIntArray(r)
-			yw := packets.NewWriter(t)
-			if err != nil {
-				fmt.Println(err)
-			}
-			for y := 0; y < len(i); y++ {
-				yw.UserPresence(objects.GetTokenByID(i[y]))
-			}
-			pckt.Write(yw.Bytes())
+		case constants.ClientUserStatsRequest:
+			updateUserStats(r, pckt)
+
+		case constants.ClientUserPresenceRequest:
+			sendUserPresence(r, pckt, t)
+
 		default:
-			fmt.Println("---------Packet---------")
-			fmt.Println("PacketID:", pkg.PacketID)
-			fmt.Println("Length:", pkg.PacketLength)
-			fmt.Println("PacketData:", pkg.PacketData)
-			fmt.Println("------------------------")
+			logPacket(&pkg)
+
 		}
 	}
 	w.Write(t.Output.Bytes())
-	t.Output.Reset()
 	w.Write(pckt.Bytes())
+	t.Output.Reset()
+}
+
+func logPacket(pkg *packets.Packet) {
+	fmt.Println("---------Packet---------")
+	fmt.Println("PacketID:", pkg.PacketID)
+	fmt.Println("Length:", pkg.PacketLength)
+	fmt.Println("PacketData:", pkg.PacketData)
+	fmt.Println("------------------------")
 }
