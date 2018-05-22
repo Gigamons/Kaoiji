@@ -6,4 +6,4 @@ script:
   - go build -v
 
 after_success:
-  curl -sL https://git.io/goreleaser | bash
+  - test -n "$TRAVIS_TAG" && ccurl -sL https://git.io/goreleaser | bash
