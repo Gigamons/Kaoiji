@@ -2,6 +2,7 @@ package objects
 
 import (
 	"bytes"
+	"sync"
 	"time"
 
 	"github.com/Gigamons/Kaoiji/constants"
@@ -10,6 +11,9 @@ import (
 	"github.com/Gigamons/common/helpers"
 	"github.com/google/uuid"
 )
+
+var lockPackets = &sync.Mutex{}
+var lockAppend = &sync.Mutex{}
 
 // Token data
 type Token struct {
@@ -38,6 +42,7 @@ var TOKENS []*Token
 
 // NewToken returns a Token that has a Token with a Token
 func NewToken(uuid uuid.UUID, lon float64, lat float64, u consts.User) *Token {
+	lockAppend.Lock()
 	t := Token{}
 	t.token = uuid.String()
 	t.Status.Info.Lat = lat
@@ -64,8 +69,24 @@ func NewToken(uuid uuid.UUID, lon float64, lat float64, u consts.User) *Token {
 	}
 
 	TOKENS = append(TOKENS, &t)
-
+	lockAppend.Unlock()
 	return &t
+}
+
+func DeleteToken(token string) {
+	lockAppend.Lock()
+	for i := 0; i < len(TOKENS); i++ {
+		if TOKENS[i].token == token {
+			TOKENS[i] = nil
+		}
+	}
+	lockAppend.Unlock()
+}
+
+func (t *Token) Write(f []byte) {
+	lockPackets.Lock()
+	t.Output.Write(f)
+	lockPackets.Unlock()
 }
 
 // TokenExists return a boolean, true if exists else false
@@ -80,41 +101,26 @@ func TokenExists(token string) bool {
 
 // GetToken Returns a UserToken from a String if not exists return nil
 func GetToken(token string) *Token {
+	lockAppend.Lock()
 	for i := 0; i < len(TOKENS); i++ {
 		if TOKENS[i].token == token {
+			lockAppend.Unlock()
 			return TOKENS[i]
 		}
 	}
+	lockAppend.Unlock()
 	return nil
 }
 
 // GetTokenByID Returns a UserToken from an UserID if not exists return nil
 func GetTokenByID(userid int32) *Token {
+	lockAppend.Lock()
 	for i := 0; i < len(TOKENS); i++ {
 		if TOKENS[i].User.ID == userid {
+			lockAppend.Unlock()
 			return TOKENS[i]
 		}
 	}
+	lockAppend.Unlock()
 	return nil
-}
-
-// StartTimeoutChecker https://stackoverflow.com/questions/16466320/is-there-a-way-to-do-repetitive-tasks-at-intervals-in-golang/16466581
-func StartTimeoutChecker() {
-	ticker := time.NewTicker(5 * time.Second)
-	quit := make(chan struct{})
-	go func() {
-		for {
-			select {
-			case <-ticker.C:
-				for i := 0; i < len(TOKENS); i++ {
-					if time.Time(TOKENS[i].LastPing).Unix() < (time.Now().Unix() - int64(1000*30)) {
-						TOKENS = append(TOKENS[:i], TOKENS[i+1:]...)
-					}
-				}
-			case <-quit:
-				ticker.Stop()
-				return
-			}
-		}
-	}()
 }

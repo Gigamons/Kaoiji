@@ -19,6 +19,10 @@ import (
 	"github.com/Gigamons/Kaoiji/packets"
 )
 
+func init() {
+	StartTimeoutChecker()
+}
+
 // sendUserStatus sends the UserStatus
 func sendUserStatus(r io.Reader, pckt *bytes.Buffer, t *objects.Token) {
 	x := constants.ClientSendUserStatusStruct{}
@@ -55,12 +59,12 @@ func removeFriend(r io.Reader, t *objects.Token) {
 }
 
 func updateUserStats(r io.Reader, pckt *bytes.Buffer) {
-	i, err := helpers.RIntArray(r)
+	_, err := helpers.RIntArray(r)
 	if err != nil {
 		fmt.Println(err)
 	}
-	for y := 0; y < len(i); y++ {
-		pckt.Write(public.SendUserStats(objects.GetTokenByID(i[y]), false))
+	for y := 0; y < len(objects.TOKENS); y++ {
+		pckt.Write(public.SendUserStats(objects.TOKENS[y], false))
 	}
 }
 
@@ -74,6 +78,20 @@ func sendUserPresence(r io.Reader, pckt *bytes.Buffer, t *objects.Token) {
 		yw.UserPresence(objects.GetTokenByID(i[y]))
 	}
 	pckt.Write(yw.Bytes())
+}
+
+func sendMessage(r io.Reader, pckt *bytes.Buffer, t *objects.Token) {
+	msg := constants.MessageStruct{}
+	helpers.UnmarshalBinary(r, &msg)
+	public.SendMessage(t, msg.Message, msg.Target)
+}
+
+func disconnectUser(t *objects.Token) {
+	main := objects.GetStream("main")
+	pckt := packets.NewPacket(constants.BanchoHandleUserQuit)
+	pckt.SetPacketData(helpers.MarshalBinary(&constants.UserQuitStruct{UserID: t.User.ID, ErrorState: int8(0)}))
+	main.Broadcast(pckt.ToByteArray(), nil)
+	t = nil
 }
 
 // HandlePackets is the Main Packet handler.
@@ -91,6 +109,15 @@ func HandlePackets(w http.ResponseWriter, r *http.Request, t *objects.Token) {
 
 		case constants.ClientSendUserStatus:
 			sendUserStatus(r, pckt, t)
+
+		case constants.ClientExit:
+			disconnectUser(t)
+
+		case constants.ClientSendIrcMessage:
+			sendMessage(r, pckt, t)
+
+		case constants.ClientSendIrcMessagePrivate:
+			sendMessage(r, pckt, t)
 
 		case constants.ClientRequestStatusUpdate:
 			pckt.Write(public.SendUserStats(t, true))
@@ -132,4 +159,17 @@ func logPacket(pkg *packets.Packet) {
 	fmt.Println("Length:", pkg.PacketLength)
 	fmt.Println("PacketData:", pkg.PacketData)
 	fmt.Println("------------------------")
+}
+
+func StartTimeoutChecker() {
+	go func() {
+		for {
+			for i := 0; i < len(objects.TOKENS); i++ {
+				if time.Time(objects.TOKENS[i].LastPing).Unix() < (time.Now().Unix() - int64(1000*10)) {
+					disconnectUser(objects.TOKENS[i])
+				}
+			}
+			time.Sleep(time.Second * 5)
+		}
+	}()
 }

@@ -55,7 +55,6 @@ func StartServer(port int) {
 	r.Use(errHandler)
 	r.HandleFunc("/", main)
 
-	objects.StartTimeoutChecker()
 	objects.NewToken(uuid.UUID{}, 0, 0, *usertools.GetUser(100))
 	fmt.Printf("Kaoiji is listening on port %v\n", port)
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(port), r))

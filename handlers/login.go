@@ -49,6 +49,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
+
 	l := _parseLoginData(b)
 	userid := usertools.GetUserID(l.Username)
 	if userid < 1 {
@@ -63,7 +64,15 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	main := objects.GetStream("main")
+
+	if main == nil {
+		panic("Nil exception, main = nil")
+	}
+
 	t := objects.NewToken(uuid, 0, 0, *u)
+
+	main.AddUser(t)
 
 	pw.SetToken(t)
 
@@ -76,6 +85,9 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	pw.AutoJoinChannel()
 	pw.ChannelAvaible()
 	pw.Write(public.SendUserStats(t, true))
+	pasw := packets.NewWriter(t)
+	pasw.PresenceSingle(t.User.ID)
+	main.Broadcast(pasw.Bytes(), nil)
 
 	w.Write(pw.Bytes())
 }

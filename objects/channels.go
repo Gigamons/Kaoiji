@@ -69,3 +69,16 @@ func LeaveChannel(channelname string) bool {
 	channel.CInfo.UserCount--
 	return true
 }
+
+func HasChannelPermission(channelname string, t *Token) bool {
+	channel := GetChannel(channelname)
+	if channel == nil {
+		return false
+	}
+	if helpers.HasPrivileges(consts.AdminChatMod, t.User) && channel.CPerm.AdminOnly {
+		return true
+	} else if !helpers.HasPrivileges(consts.AdminChatMod, t.User) && channel.CPerm.AdminOnly {
+		return false
+	}
+	return true
+}

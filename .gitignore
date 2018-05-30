@@ -8,6 +8,7 @@ data/
 # Debug Files
 kaoiji
 debug
+gomon_spawn
 
 # Binaries for programs and plugins
 *.exe
