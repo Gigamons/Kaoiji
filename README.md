@@ -2,8 +2,7 @@
 a Bancho written in Golang (our current Bancho)
 
 # Build Status
-[![Build Status](https://travis-ci.org/Gigamons/Kaoiji.svg?branch=master)](https://travis-ci.org/Gigamons/Kaoiji)
-[![CodeFactor](https://www.codefactor.io/repository/github/gigamons/kaoiji/badge/master)](https://www.codefactor.io/repository/github/gigamons/kaoiji/overview/master)
+[![Build Status](https://travis-ci.org/Gigamons/Kaoiji.svg?branch=master)](https://travis-ci.org/Gigamons/Kaoiji)[![CodeFactor](https://www.codefactor.io/repository/github/gigamons/kaoiji/badge/master)](https://www.codefactor.io/repository/github/gigamons/kaoiji/overview/master)[![Appveyor](https://ci.appveyor.com/api/projects/status/github/Gigamons/kaoiji?svg=true&retina=true&branch=master&passingText=master%20-%20OK)](https://ci.appveyor.com/project/Mempler/kaoiji)
 
 # Requirements
 * [MariaDB 10.2](https://downloads.mariadb.org/)
