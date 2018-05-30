@@ -15,7 +15,7 @@ install:
   - go get -d ./...
 
 test_script:
-  - go build -v /home/appveyor/projects/kaoiji/kaoiji.go
+  - go build -v $GOPATH/src/github.com/Gigamons/Kaoiji/kaoiji.go
 
 after_test:
   - curl https://git.io/goreleaser | bash -
