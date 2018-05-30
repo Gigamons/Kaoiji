@@ -6,10 +6,14 @@ pull_requests:
 clone_depth: 50
 stack: go 1.10, mysql, redis
 
+environment:
+  GOPATH: $HOME/go
+
 init:
   - git config --global core.autocrlf input
 
 install:
+  - go get -d -v github.com/Gigamons/common
   - go get -d -v github.com/Gigamons/Kaoiji
 
 test_script:
