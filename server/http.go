@@ -28,6 +28,7 @@ func main(w http.ResponseWriter, r *http.Request) {
 		return
 	} else if r.Header.Get("osu-token") != "" && !objects.TokenExists(r.Header.Get("osu-token")) {
 		w.WriteHeader(403)
+		fmt.Fprint(w, "Nya~")
 		return
 	} else if r.Header.Get("osu-token") != "" && objects.TokenExists(r.Header.Get("osu-token")) {
 		handlers.HandlePackets(w, r, objects.GetToken(r.Header.Get("osu-token")))
