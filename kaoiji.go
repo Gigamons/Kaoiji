@@ -34,5 +34,5 @@ func main() {
 
 	defer helpers.DB.Close()
 
-	server.StartServer(5001)
+	server.StartServer(conf.Server.Port)
 }
