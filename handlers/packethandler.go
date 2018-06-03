@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Gigamons/common/logger"
+
 	"github.com/Gigamons/common/helpers"
 	"github.com/Gigamons/common/tools/usertools"
 
@@ -90,8 +92,8 @@ func disconnectUser(t *objects.Token) {
 	main := objects.GetStream("main")
 	pckt := packets.NewPacket(constants.BanchoHandleUserQuit)
 	pckt.SetPacketData(helpers.MarshalBinary(&constants.UserQuitStruct{UserID: t.User.ID, ErrorState: int8(0)}))
+	objects.DeleteToken(t.Token)
 	main.Broadcast(pckt.ToByteArray(), nil)
-	t = nil
 }
 
 // HandlePackets is the Main Packet handler.
@@ -102,6 +104,8 @@ func HandlePackets(w http.ResponseWriter, r *http.Request, t *objects.Token) {
 	}
 	pkgs := packets.GetPackets(b)
 	pckt := bytes.NewBuffer([]byte{})
+	t.LastPing = time.Now()
+
 	for i := 0; i < len(pkgs); i++ {
 		pkg := pkgs[i]
 		r := bytes.NewReader(pkg.PacketData)
@@ -165,7 +169,8 @@ func StartTimeoutChecker() {
 	go func() {
 		for {
 			for i := 0; i < len(objects.TOKENS); i++ {
-				if time.Time(objects.TOKENS[i].LastPing).Unix() < (time.Now().Unix() - int64(1000*10)) {
+				if objects.TOKENS[i].LastPing.Unix() < (time.Now().Unix()-int64(30)) && objects.TOKENS[i].User.ID != 100 {
+					logger.Info("%s got an Timeout!", objects.TOKENS[i].User.UserName)
 					disconnectUser(objects.TOKENS[i])
 				}
 			}

@@ -17,7 +17,7 @@ var lockAppend = &sync.Mutex{}
 
 // Token data
 type Token struct {
-	token  string
+	Token  string
 	User   consts.User
 	Status struct {
 		Torney  bool
@@ -44,7 +44,7 @@ var TOKENS []*Token
 func NewToken(uuid uuid.UUID, lon float64, lat float64, u consts.User) *Token {
 	lockAppend.Lock()
 	t := Token{}
-	t.token = uuid.String()
+	t.Token = uuid.String()
 	t.Status.Info.Lat = lat
 	t.Status.Info.Lon = lon
 	t.LastPing = time.Now()
@@ -76,8 +76,10 @@ func NewToken(uuid uuid.UUID, lon float64, lat float64, u consts.User) *Token {
 func DeleteToken(token string) {
 	lockAppend.Lock()
 	for i := 0; i < len(TOKENS); i++ {
-		if TOKENS[i].token == token {
-			TOKENS[i] = nil
+		if TOKENS[i].Token == token {
+			copy(TOKENS[i:], TOKENS[i+1:])
+			TOKENS[len(TOKENS)-1] = nil
+			TOKENS = TOKENS[:len(TOKENS)-1]
 		}
 	}
 	lockAppend.Unlock()
@@ -92,7 +94,7 @@ func (t *Token) Write(f []byte) {
 // TokenExists return a boolean, true if exists else false
 func TokenExists(token string) bool {
 	for i := 0; i < len(TOKENS); i++ {
-		if TOKENS[i].token == token {
+		if TOKENS[i].Token == token {
 			return true
 		}
 	}
@@ -103,7 +105,7 @@ func TokenExists(token string) bool {
 func GetToken(token string) *Token {
 	lockAppend.Lock()
 	for i := 0; i < len(TOKENS); i++ {
-		if TOKENS[i].token == token {
+		if TOKENS[i].Token == token {
 			lockAppend.Unlock()
 			return TOKENS[i]
 		}
