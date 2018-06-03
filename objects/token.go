@@ -73,6 +73,7 @@ func NewToken(uuid uuid.UUID, lon float64, lat float64, u consts.User) *Token {
 	return &t
 }
 
+// DeleteToken deletes the given Token (String) from our TOKENS Array.
 func DeleteToken(token string) {
 	lockAppend.Lock()
 	for i := 0; i < len(TOKENS); i++ {
@@ -85,6 +86,7 @@ func DeleteToken(token string) {
 	lockAppend.Unlock()
 }
 
+// Write writes to our Client that'll get send to client on Next/This request.
 func (t *Token) Write(f []byte) {
 	lockPackets.Lock()
 	t.Output.Write(f)

@@ -22,6 +22,7 @@ import (
 )
 
 func init() {
+	// Start the Timeout Check, since we don't know if the user has a timeout, we do that manually. (Only call it once)
 	StartTimeoutChecker()
 }
 
@@ -39,6 +40,7 @@ func joinChannel(r io.Reader, pckt *bytes.Buffer, t *objects.Token) {
 	xw := objects.ChannelInfo{}
 	helpers.UnmarshalBinary(r, &xw)
 	yw.JoinChannel(xw.ChannelName)
+	yw.ChannelAvaible()
 	pckt.Write(yw.Bytes())
 }
 
@@ -60,6 +62,7 @@ func removeFriend(r io.Reader, t *objects.Token) {
 	packets.RemoveFriend(&t.User, usertools.GetUser(int(i)))
 }
 
+// updateUserStats updates the User stats for that user, (No fetching out of SQL)
 func updateUserStats(r io.Reader, pckt *bytes.Buffer) {
 	_, err := helpers.RIntArray(r)
 	if err != nil {
@@ -70,6 +73,7 @@ func updateUserStats(r io.Reader, pckt *bytes.Buffer) {
 	}
 }
 
+// sendUserPresence Send the User Precense of the Given UserID.
 func sendUserPresence(r io.Reader, pckt *bytes.Buffer, t *objects.Token) {
 	i, err := helpers.RIntArray(r)
 	yw := packets.NewWriter(t)
@@ -82,12 +86,14 @@ func sendUserPresence(r io.Reader, pckt *bytes.Buffer, t *objects.Token) {
 	pckt.Write(yw.Bytes())
 }
 
+// sendMessage User sends a MSG Packet to us, we're handling it and send it to the User Target
 func sendMessage(r io.Reader, pckt *bytes.Buffer, t *objects.Token) {
 	msg := constants.MessageStruct{}
 	helpers.UnmarshalBinary(r, &msg)
 	public.SendMessage(t, msg.Message, msg.Target)
 }
 
+// disconnectUser Our user has a Timeout nor He Disconnects, we're broadcast it to Everyone that that user got a Timeout / Disconnect.
 func disconnectUser(t *objects.Token) {
 	main := objects.GetStream("main")
 	pckt := packets.NewPacket(constants.BanchoHandleUserQuit)
@@ -165,6 +171,7 @@ func logPacket(pkg *packets.Packet) {
 	fmt.Println("------------------------")
 }
 
+// StartTimeoutChecker Check for all Timeouts (Should only called once.)
 func StartTimeoutChecker() {
 	go func() {
 		for {
