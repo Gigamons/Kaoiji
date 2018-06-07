@@ -7,8 +7,9 @@ type UserStatsStruct struct {
 	BeatmapChecksum string
 	CurrentMods     uint32
 	PlayMode        int8
+	BeatmapID       int32
 	RankedScore     uint64
-	Accuracy        float64
+	Accuracy        float32
 	PlayCount       int32
 	TotalScore      uint64
 	Rank            int32
