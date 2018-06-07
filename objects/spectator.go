@@ -79,7 +79,9 @@ func RemoveSpectatorStream(t *Token) {
 	for i := 0; i < len(SSTREAMS); i++ {
 		if SSTREAMS[i].HostToken == t {
 			sStreamLock.Unlock()
-			SSTREAMS[i] = nil
+			copy(SSTREAMS[i:], SSTREAMS[i+1:])
+			SSTREAMS[len(SSTREAMS)-1] = nil
+			SSTREAMS = SSTREAMS[:len(SSTREAMS)-1]
 			return
 		}
 	}

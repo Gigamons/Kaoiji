@@ -102,6 +102,14 @@ func disconnectUser(t *objects.Token) {
 	main.Broadcast(pckt.ToByteArray(), nil)
 }
 
+func startSpectate(r io.Reader, t *objects.Token) {
+	i, err := helpers.RInt32(r)
+	if err != nil {
+		panic(err)
+	}
+	_ = i
+}
+
 // HandlePackets is the Main Packet handler.
 func HandlePackets(w http.ResponseWriter, r *http.Request, t *objects.Token) {
 	b, err := ioutil.ReadAll(r.Body)
@@ -152,6 +160,8 @@ func HandlePackets(w http.ResponseWriter, r *http.Request, t *objects.Token) {
 
 		case constants.ClientUserPresenceRequest:
 			sendUserPresence(r, pckt, t)
+
+		case constants.ClientStartSpectating:
 
 		default:
 			logPacket(&pkg)
