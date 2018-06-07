@@ -12,6 +12,11 @@ type Config struct {
 		FreeDirect bool
 		Debug      bool
 	}
+	API struct {
+		KokoroHost   string
+		KokoroAPIKey string
+		APIKey       string
+	}
 	MySQL consts.MySQLConf
 	Redis struct {
 		Hostname string
