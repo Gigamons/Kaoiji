@@ -32,9 +32,11 @@ type Token struct {
 			Rank        int32
 		}
 	}
-	Leaderboard consts.Leaderboard
-	LastPing    time.Time
-	Output      bytes.Buffer
+	AlreadyNotified bool
+	SpectatorStream *SpectatorStream
+	Leaderboard     consts.Leaderboard
+	LastPing        time.Time
+	Output          bytes.Buffer
 }
 
 // TOKENS Global Variable for Token array.
@@ -43,7 +45,7 @@ var TOKENS []*Token
 // NewToken returns a Token that has a Token with a Token
 func NewToken(uuid uuid.UUID, lon float64, lat float64, u consts.User) *Token {
 	lockAppend.Lock()
-	t := Token{}
+	t := &Token{}
 	t.Token = uuid.String()
 	t.Status.Info.Lat = lat
 	t.Status.Info.Lon = lon
@@ -68,9 +70,10 @@ func NewToken(uuid uuid.UUID, lon float64, lat float64, u consts.User) *Token {
 		t.Status.Info.ClientPerm |= constants.Developer
 	}
 
-	TOKENS = append(TOKENS, &t)
+	t.SpectatorStream = NewSpectatorStream(t)
+	TOKENS = append(TOKENS, t)
 	lockAppend.Unlock()
-	return &t
+	return t
 }
 
 // DeleteToken deletes the given Token (String) from our TOKENS Array.
@@ -78,6 +81,18 @@ func DeleteToken(token string) {
 	lockAppend.Lock()
 	for i := 0; i < len(TOKENS); i++ {
 		if TOKENS[i].Token == token {
+			copy(TOKENS[i:], TOKENS[i+1:])
+			TOKENS[len(TOKENS)-1] = nil
+			TOKENS = TOKENS[:len(TOKENS)-1]
+		}
+	}
+	lockAppend.Unlock()
+}
+
+func DeleteOldTokens(userid int32) {
+	lockAppend.Lock()
+	for i := 0; i < len(TOKENS); i++ {
+		if TOKENS[i].User.ID == userid {
 			copy(TOKENS[i:], TOKENS[i+1:])
 			TOKENS[len(TOKENS)-1] = nil
 			TOKENS = TOKENS[:len(TOKENS)-1]

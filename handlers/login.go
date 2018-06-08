@@ -64,6 +64,8 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	objects.DeleteOldTokens(u.ID)
+
 	main := objects.GetStream("main")
 
 	if main == nil {

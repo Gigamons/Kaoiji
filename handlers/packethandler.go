@@ -31,7 +31,27 @@ func sendUserStatus(r io.Reader, pckt *bytes.Buffer, t *objects.Token) {
 	x := constants.ClientSendUserStatusStruct{}
 	helpers.UnmarshalBinary(r, &x)
 	t.Status.Beatmap = x
-	pckt.Write(public.SendUserStats(t, false))
+	if x.CurrentMods&128 > 0 || x.CurrentMods&8192 > 0 {
+		if !t.AlreadyNotified {
+			t.AlreadyNotified = true
+			w := packets.NewWriter(t)
+			w.Announce("You've enabled the RX/AP Scoreboard.\nAP has Nerfed aim PP.\nRX has Nerfed speed PP.")
+			t.Write(w.Bytes())
+		}
+		if !t.User.Relax {
+			pckt.Write(public.SendUserStats(t, true))
+		} else {
+			pckt.Write(public.SendUserStats(t, false))
+		}
+		t.User.Relax = true
+	} else {
+		if t.User.Relax {
+			pckt.Write(public.SendUserStats(t, true))
+		} else {
+			pckt.Write(public.SendUserStats(t, false))
+		}
+		t.User.Relax = false
+	}
 }
 
 // joinChannel sends a Join successfull/fail to the Client.
@@ -107,7 +127,8 @@ func startSpectate(r io.Reader, t *objects.Token) {
 	if err != nil {
 		panic(err)
 	}
-	_ = i
+	HostToken := objects.GetTokenByID(i)
+	HostToken.SpectatorStream.AddUser(t)
 }
 
 // HandlePackets is the Main Packet handler.
@@ -162,6 +183,7 @@ func HandlePackets(w http.ResponseWriter, r *http.Request, t *objects.Token) {
 			sendUserPresence(r, pckt, t)
 
 		case constants.ClientStartSpectating:
+			startSpectate(r, t)
 
 		default:
 			logPacket(&pkg)

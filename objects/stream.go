@@ -31,6 +31,8 @@ func (s *Stream) RemoveUser(t *Token) {
 	s.streamLock.Lock()
 	for i := 0; i < len(s.Tokens); i++ {
 		if s.Tokens[i] == t {
+			copy(s.Tokens[i:], s.Tokens[i+1:])
+			s.Tokens[len(s.Tokens)-1] = nil
 			s.Tokens = s.Tokens[:len(s.Tokens)-1]
 		}
 	}
