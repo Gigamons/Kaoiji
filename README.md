@@ -30,10 +30,7 @@ the Compiled binary is located in the Source directory.
 
 Download the LATEST pre-compiled binary [here](https://github.com/Gigamons/Kaoiji/releases) or build it by yourself.
 
-run `Kaoiji` or `Kaoiji.exe` once to generate a config file. \
-Edit the Config file then rerun `Kaoiji` or `Kaoiji.exe`.
-
-Done, The database structure will be generated automaticly into the given Database.
+TODO Finish.
 
 # Todo
 * README Fix english.
