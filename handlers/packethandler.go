@@ -2,10 +2,8 @@ package handlers
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"time"
 
@@ -68,25 +66,28 @@ func joinChannel(r io.Reader, pckt *bytes.Buffer, t *objects.Token) {
 func addFriend(r io.Reader, t *objects.Token) {
 	i, err := helpers.RInt32(r)
 	if err != nil {
-		fmt.Println(err)
+		logger.Errorln(err)
+		return
 	}
-	packets.AddFriend(&t.User, usertools.GetUser(int(i)))
+	packets.AddFriend(t.User, usertools.GetUser(int(i)))
 }
 
 // removeFriend removes a Friend ofc!
 func removeFriend(r io.Reader, t *objects.Token) {
 	i, err := helpers.RInt32(r)
 	if err != nil {
-		fmt.Println(err)
+		logger.Errorln(err)
+		return
 	}
-	packets.RemoveFriend(&t.User, usertools.GetUser(int(i)))
+	packets.RemoveFriend(t.User, usertools.GetUser(int(i)))
 }
 
 // updateUserStats updates the User stats for that user, (No fetching out of SQL)
 func updateUserStats(r io.Reader, pckt *bytes.Buffer) {
 	_, err := helpers.RIntArray(r)
 	if err != nil {
-		fmt.Println(err)
+		logger.Errorln(err)
+		return
 	}
 	for y := 0; y < len(objects.TOKENS); y++ {
 		pckt.Write(public.SendUserStats(objects.TOKENS[y], false))
@@ -98,7 +99,8 @@ func sendUserPresence(r io.Reader, pckt *bytes.Buffer, t *objects.Token) {
 	i, err := helpers.RIntArray(r)
 	yw := packets.NewWriter(t)
 	if err != nil {
-		fmt.Println(err)
+		logger.Errorln(err)
+		return
 	}
 	for y := 0; y < len(i); y++ {
 		yw.UserPresence(objects.GetTokenByID(i[y]))
@@ -125,7 +127,8 @@ func disconnectUser(t *objects.Token) {
 func startSpectate(r io.Reader, t *objects.Token) {
 	i, err := helpers.RInt32(r)
 	if err != nil {
-		panic(err)
+		logger.Errorln(err)
+		return
 	}
 	HostToken := objects.GetTokenByID(i)
 	HostToken.SpectatorStream.AddUser(t)
@@ -135,7 +138,8 @@ func startSpectate(r io.Reader, t *objects.Token) {
 func HandlePackets(w http.ResponseWriter, r *http.Request, t *objects.Token) {
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.Fatal(err)
+		logger.Errorln(err)
+		return
 	}
 	pkgs := packets.GetPackets(b)
 	pckt := bytes.NewBuffer([]byte{})
@@ -196,11 +200,11 @@ func HandlePackets(w http.ResponseWriter, r *http.Request, t *objects.Token) {
 }
 
 func logPacket(pkg *packets.Packet) {
-	fmt.Println("---------Packet---------")
-	fmt.Println("PacketID:", pkg.PacketID)
-	fmt.Println("Length:", pkg.PacketLength)
-	fmt.Println("PacketData:", pkg.PacketData)
-	fmt.Println("------------------------")
+	logger.Debugln("---------Packet---------")
+	logger.Debugln("PacketID:", pkg.PacketID)
+	logger.Debugln("Length:", pkg.PacketLength)
+	logger.Debugln("PacketData:", pkg.PacketData)
+	logger.Debugln("------------------------")
 }
 
 // StartTimeoutChecker Check for all Timeouts (Should only called once.)
@@ -209,7 +213,7 @@ func StartTimeoutChecker() {
 		for {
 			for i := 0; i < len(objects.TOKENS); i++ {
 				if objects.TOKENS[i].LastPing.Unix() < (time.Now().Unix()-int64(30)) && objects.TOKENS[i].User.ID != 100 {
-					logger.Info("%s got an Timeout!", objects.TOKENS[i].User.UserName)
+					logger.Infof("%s got an Timeout!\n", objects.TOKENS[i].User.UserName)
 					disconnectUser(objects.TOKENS[i])
 				}
 			}

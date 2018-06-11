@@ -9,6 +9,7 @@ import (
 	"github.com/Gigamons/common/tools/usertools"
 )
 
+// SendUserStats sends a Status to given client. nor return a byte array
 func SendUserStats(t *objects.Token, forced bool) []byte {
 	w := packets.Writer{}
 	x := constants.UserStatsStruct{}

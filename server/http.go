@@ -7,11 +7,12 @@ import (
 	"runtime/debug"
 	"strconv"
 
+	"github.com/Gigamons/common/logger"
 	"github.com/Gigamons/common/tools/usertools"
-	"github.com/google/uuid"
 
 	"github.com/Gigamons/Kaoiji/handlers"
 	"github.com/Gigamons/Kaoiji/objects"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
@@ -56,7 +57,7 @@ func StartServer(port int) {
 	r.Use(errHandler)
 	r.HandleFunc("/", main)
 
-	objects.NewToken(uuid.UUID{}, 0, 0, *usertools.GetUser(100))
-	fmt.Printf("Kaoiji is listening on port %v\n", port)
+	objects.NewToken(uuid.UUID{}, 0, 0, usertools.GetUser(100))
+	logger.Infof("Kaoiji is listening on port %v\n", port)
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(port), r))
 }

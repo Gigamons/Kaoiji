@@ -1,9 +1,9 @@
 package public
 
 import (
-	"fmt"
 	"strings"
 
+	"github.com/Gigamons/common/logger"
 	"github.com/Gigamons/common/tools/usertools"
 
 	"github.com/Gigamons/Kaoiji/constants"
@@ -12,13 +12,14 @@ import (
 	"github.com/Gigamons/common/helpers"
 )
 
+// SendMessage Send a Message from given client to given target
 func SendMessage(t *objects.Token, Message string, Channel string) {
 	main := objects.GetStream("main")
 	p := packets.NewPacket(constants.BanchoSendMessage)
 	msg := &constants.MessageStruct{Message: Message, UserID: t.User.ID, Username: t.User.UserName, Target: Channel}
 
 	if msg == nil {
-		fmt.Println("Msg = nil")
+		logger.Debugln("Msg = nil")
 		return
 	}
 	if main == nil {

@@ -3,9 +3,9 @@ package packets
 import (
 	"bytes"
 	"encoding/binary"
-	"fmt"
 
 	"github.com/Gigamons/common/helpers"
+	"github.com/Gigamons/common/logger"
 )
 
 // Packet struct is simply a packet
@@ -59,7 +59,7 @@ func GetPackets(pkg []byte) []Packet {
 		PacketData := make([]byte, PacketLength)
 		lngth, err := b.Read(PacketData)
 		if lngth < int(PacketLength) {
-			fmt.Println("Unexpected Packet length! maybe invalid packet ?")
+			logger.Errorln("Unexpected Packet length! maybe invalid packet?")
 			continue
 		}
 		packetList = append(packetList, Packet{PacketID: PacketID, PacketLength: PacketLength, PacketData: PacketData})

@@ -18,7 +18,7 @@ var lockAppend = &sync.Mutex{}
 // Token data
 type Token struct {
 	Token  string
-	User   consts.User
+	User   *consts.User
 	Status struct {
 		Torney  bool
 		Beatmap constants.ClientSendUserStatusStruct
@@ -34,7 +34,7 @@ type Token struct {
 	}
 	AlreadyNotified bool
 	SpectatorStream *SpectatorStream
-	Leaderboard     consts.Leaderboard
+	Leaderboard     *consts.Leaderboard
 	LastPing        time.Time
 	Output          bytes.Buffer
 }
@@ -43,7 +43,7 @@ type Token struct {
 var TOKENS []*Token
 
 // NewToken returns a Token that has a Token with a Token
-func NewToken(uuid uuid.UUID, lon float64, lat float64, u consts.User) *Token {
+func NewToken(uuid uuid.UUID, lon float64, lat float64, u *consts.User) *Token {
 	lockAppend.Lock()
 	t := &Token{}
 	t.Token = uuid.String()
