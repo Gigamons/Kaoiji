@@ -10,7 +10,6 @@ import (
 	"github.com/Gigamons/common/logger"
 	"github.com/Mempler/osubinary"
 
-	"github.com/Gigamons/common/helpers"
 	"github.com/Gigamons/common/tools/usertools"
 
 	"github.com/Gigamons/Kaoiji/constants"
@@ -65,7 +64,7 @@ func joinChannel(r io.Reader, pckt *bytes.Buffer, t *objects.Token) {
 
 // addFriend adds a Friend ofc!
 func addFriend(r io.Reader, t *objects.Token) {
-	i, err := helpers.RInt32(r)
+	i, err := osubinary.RInt32(r)
 	if err != nil {
 		logger.Errorln(err)
 		return
@@ -75,7 +74,7 @@ func addFriend(r io.Reader, t *objects.Token) {
 
 // removeFriend removes a Friend ofc!
 func removeFriend(r io.Reader, t *objects.Token) {
-	i, err := helpers.RInt32(r)
+	i, err := osubinary.RInt32(r)
 	if err != nil {
 		logger.Errorln(err)
 		return
@@ -85,7 +84,7 @@ func removeFriend(r io.Reader, t *objects.Token) {
 
 // updateUserStats updates the User stats for that user, (No fetching out of SQL)
 func updateUserStats(r io.Reader, pckt *bytes.Buffer) {
-	_, err := helpers.RIntArray(r)
+	_, err := osubinary.RIntArray(r)
 	if err != nil {
 		logger.Errorln(err)
 		return
@@ -97,7 +96,7 @@ func updateUserStats(r io.Reader, pckt *bytes.Buffer) {
 
 // sendUserPresence Send the User Precense of the Given UserID.
 func sendUserPresence(r io.Reader, pckt *bytes.Buffer, t *objects.Token) {
-	i, err := helpers.RIntArray(r)
+	i, err := osubinary.RIntArray(r)
 	yw := packets.NewWriter(t)
 	if err != nil {
 		logger.Errorln(err)
@@ -126,7 +125,7 @@ func disconnectUser(t *objects.Token) {
 }
 
 func startSpectate(r io.Reader, t *objects.Token) {
-	i, err := helpers.RInt32(r)
+	i, err := osubinary.RInt32(r)
 	if err != nil {
 		logger.Errorln(err)
 		return
@@ -200,7 +199,7 @@ func HandlePackets(w http.ResponseWriter, r *http.Request, t *objects.Token) {
 	t.Output.Reset()
 }
 
-func logPacket(pkg *packets.Packet) {
+func logPacket(pkg *constants.Packet) {
 	logger.Debugln("---------Packet---------")
 	logger.Debugln("PacketID:", pkg.PacketID)
 	logger.Debugln("Length:", pkg.PacketLength)

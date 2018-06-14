@@ -9,12 +9,12 @@ import (
 	"strings"
 
 	"github.com/Gigamons/Kaoiji/handlers/public"
+	"github.com/Mempler/osubinary"
 
 	"github.com/google/uuid"
 
 	"github.com/Gigamons/Kaoiji/constants"
 	"github.com/Gigamons/Kaoiji/objects"
-	"github.com/Gigamons/common/helpers"
 	"github.com/Gigamons/common/logger"
 	"github.com/Gigamons/common/tools/usertools"
 
@@ -24,7 +24,7 @@ import (
 func Err(w http.ResponseWriter) {
 	w.Header().Add("cho-token", "error")
 	p := packets.NewPacket(constants.BanchoLoginReply)
-	p.SetPacketData(helpers.Int32(constants.LoginException))
+	p.SetPacketData(osubinary.Int32(constants.LoginException))
 	w.Write(p.ToByteArray())
 }
 
