@@ -5,7 +5,7 @@ import (
 	"encoding/binary"
 	"sync"
 
-	"github.com/Gigamons/common/helpers"
+	"github.com/Mempler/osubinary"
 
 	"github.com/Gigamons/Kaoiji/constants"
 )
@@ -94,7 +94,7 @@ func (s *SpectatorStream) AddUser(t *Token) {
 
 	b := new(bytes.Buffer)
 
-	u := helpers.Int32(t.User.ID)
+	u := osubinary.Int32(t.User.ID)
 
 	if s.AlreadySpectating(t) {
 		return
@@ -131,7 +131,7 @@ func (s *SpectatorStream) AlreadySpectating(t *Token) bool {
 
 func (s *SpectatorStream) Broadcast(frame *spectatorFrame) {
 	b := new(bytes.Buffer)
-	bf := helpers.MarshalBinary(frame)
+	bf := osubinary.Marshal(frame)
 
 	binary.Write(b, binary.LittleEndian, constants.BanchoSpectateFrames)
 	binary.Write(b, binary.LittleEndian, int8(0))

@@ -2,12 +2,12 @@ package packets
 
 import (
 	"github.com/Gigamons/Kaoiji/constants"
-	"github.com/Gigamons/common/helpers"
+	"github.com/Mempler/osubinary"
 )
 
 func (w *Writer) BeatmapInfoReply() {
 	p := NewPacket(constants.BanchoBeatmapInfoReply)
 	b := constants.BeatmapInfo{}
-	p.SetPacketData(helpers.MarshalBinary(b))
+	p.SetPacketData(osubinary.Marshal(b))
 	w.Write(p.ToByteArray())
 }

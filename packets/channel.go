@@ -5,6 +5,7 @@ import (
 	"github.com/Gigamons/Kaoiji/objects"
 	"github.com/Gigamons/common/consts"
 	"github.com/Gigamons/common/helpers"
+	"github.com/Mempler/osubinary"
 )
 
 func (w *Writer) AutoJoinChannel() {
@@ -21,7 +22,7 @@ func (w *Writer) ChannelAvaible() {
 			continue
 		}
 		p := NewPacket(constants.BanchoChannelAvailable)
-		p.SetPacketData(helpers.MarshalBinary(&objects.CHANNELS[i].CInfo))
+		p.SetPacketData(osubinary.Marshal(objects.CHANNELS[i].CInfo))
 		w.Write(p.ToByteArray())
 	}
 }
@@ -36,12 +37,12 @@ func (w *Writer) JoinChannel(channelname string) {
 
 func (w *Writer) JoinChannelSuccess(channelname string) {
 	p := NewPacket(constants.BanchoChannelJoinSuccess)
-	p.SetPacketData(helpers.BString(channelname))
+	p.SetPacketData(osubinary.BString(channelname))
 	w.Write(p.ToByteArray())
 }
 
 func (w *Writer) KickOutOfChannel(channelname string) {
 	p := NewPacket(constants.BanchoChannelRevoked)
-	p.SetPacketData(helpers.BString(channelname))
+	p.SetPacketData(osubinary.BString(channelname))
 	w.Write(p.ToByteArray())
 }

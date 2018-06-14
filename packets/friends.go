@@ -6,12 +6,13 @@ import (
 	"github.com/Gigamons/common/helpers"
 	"github.com/Gigamons/common/logger"
 	"github.com/Gigamons/common/tools/usertools"
+	"github.com/Mempler/osubinary"
 )
 
 func (w *Writer) SendFriendlist() {
 	flist := usertools.GetFriends(w._token.User)
 	p := NewPacket(constants.BanchoFriendsList)
-	p.SetPacketData(helpers.IntArray(flist))
+	p.SetPacketData(osubinary.IntArray(flist))
 	w.Write(p.ToByteArray())
 }
 

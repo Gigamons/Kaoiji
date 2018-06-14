@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Gigamons/common/logger"
+	"github.com/Mempler/osubinary"
 
 	"github.com/Gigamons/common/helpers"
 	"github.com/Gigamons/common/tools/usertools"
@@ -27,7 +28,7 @@ func init() {
 // sendUserStatus sends the UserStatus
 func sendUserStatus(r io.Reader, pckt *bytes.Buffer, t *objects.Token) {
 	x := constants.ClientSendUserStatusStruct{}
-	helpers.UnmarshalBinary(r, &x)
+	osubinary.Unmarshal(r, &x)
 	t.Status.Beatmap = x
 	if x.CurrentMods&128 > 0 || x.CurrentMods&8192 > 0 {
 		if !t.AlreadyNotified {
@@ -56,7 +57,7 @@ func sendUserStatus(r io.Reader, pckt *bytes.Buffer, t *objects.Token) {
 func joinChannel(r io.Reader, pckt *bytes.Buffer, t *objects.Token) {
 	yw := packets.NewWriter(t)
 	xw := objects.ChannelInfo{}
-	helpers.UnmarshalBinary(r, &xw)
+	osubinary.Unmarshal(r, &xw)
 	yw.JoinChannel(xw.ChannelName)
 	yw.ChannelAvaible()
 	pckt.Write(yw.Bytes())
@@ -111,7 +112,7 @@ func sendUserPresence(r io.Reader, pckt *bytes.Buffer, t *objects.Token) {
 // sendMessage User sends a MSG Packet to us, we're handling it and send it to the User Target
 func sendMessage(r io.Reader, pckt *bytes.Buffer, t *objects.Token) {
 	msg := constants.MessageStruct{}
-	helpers.UnmarshalBinary(r, &msg)
+	osubinary.Unmarshal(r, &msg)
 	public.SendMessage(t, msg.Message, msg.Target)
 }
 
@@ -119,7 +120,7 @@ func sendMessage(r io.Reader, pckt *bytes.Buffer, t *objects.Token) {
 func disconnectUser(t *objects.Token) {
 	main := objects.GetStream("main")
 	pckt := packets.NewPacket(constants.BanchoHandleUserQuit)
-	pckt.SetPacketData(helpers.MarshalBinary(&constants.UserQuitStruct{UserID: t.User.ID, ErrorState: int8(0)}))
+	pckt.SetPacketData(osubinary.Marshal(constants.UserQuitStruct{UserID: t.User.ID, ErrorState: int8(0)}))
 	objects.DeleteToken(t.Token)
 	main.Broadcast(pckt.ToByteArray(), nil)
 }
