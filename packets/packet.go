@@ -8,11 +8,6 @@ import (
 	"github.com/Mempler/osubinary"
 )
 
-// NewPacket Create a new Packet
-func NewPacket(packetid int) constants.Packet {
-	return constants.Packet{int16(packetid), 0, nil}
-}
-
 // GetPackets get a packet
 func GetPackets(pkg []byte) []constants.Packet {
 	packetList := []constants.Packet{}

@@ -21,7 +21,7 @@ func (w *Writer) ChannelAvaible() {
 		if !helpers.HasPrivileges(consts.AdminChatMod, w._token.User) && objects.CHANNELS[i].CPerm.AdminOnly {
 			continue
 		}
-		p := NewPacket(constants.BanchoChannelAvailable)
+		p := constants.NewPacket(constants.BanchoChannelAvailable)
 		p.SetPacketData(osubinary.Marshal(objects.CHANNELS[i].CInfo))
 		w.Write(p.ToByteArray())
 	}
@@ -36,13 +36,13 @@ func (w *Writer) JoinChannel(channelname string) {
 }
 
 func (w *Writer) JoinChannelSuccess(channelname string) {
-	p := NewPacket(constants.BanchoChannelJoinSuccess)
+	p := constants.NewPacket(constants.BanchoChannelJoinSuccess)
 	p.SetPacketData(osubinary.BString(channelname))
 	w.Write(p.ToByteArray())
 }
 
 func (w *Writer) KickOutOfChannel(channelname string) {
-	p := NewPacket(constants.BanchoChannelRevoked)
+	p := constants.NewPacket(constants.BanchoChannelRevoked)
 	p.SetPacketData(osubinary.BString(channelname))
 	w.Write(p.ToByteArray())
 }

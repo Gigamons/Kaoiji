@@ -7,7 +7,7 @@ import (
 
 // ProtocolVersion current ProtocolVersion
 func (w *Writer) ProtocolVersion(i int32) {
-	p := NewPacket(constants.BanchoProtocolNegotiation)
+	p := constants.NewPacket(constants.BanchoProtocolNegotiation)
 	p.SetPacketData(osubinary.Int32(i))
 	w.Write(p.ToByteArray())
 }

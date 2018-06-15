@@ -11,7 +11,7 @@ import (
 
 func (w *Writer) SendFriendlist() {
 	flist := usertools.GetFriends(w._token.User)
-	p := NewPacket(constants.BanchoFriendsList)
+	p := constants.NewPacket(constants.BanchoFriendsList)
 	p.SetPacketData(osubinary.IntArray(flist))
 	w.Write(p.ToByteArray())
 }

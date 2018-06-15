@@ -7,7 +7,7 @@ import (
 
 // LoginPermissions sends the "Client" permissions to the client.
 func (w *Writer) LoginPermissions() {
-	p := NewPacket(constants.BanchoLoginPermissions)
+	p := constants.NewPacket(constants.BanchoLoginPermissions)
 	p.SetPacketData(osubinary.Int32(int32(w._token.Status.Info.ClientPerm)))
 	w.Write(p.ToByteArray())
 }

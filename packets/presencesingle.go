@@ -6,7 +6,7 @@ import (
 )
 
 func (w *Writer) PresenceSingle(userid int32) {
-	p := NewPacket(constants.BanchoUserPresenceSingle)
+	p := constants.NewPacket(constants.BanchoUserPresenceSingle)
 	p.SetPacketData(osubinary.Int32(userid))
 	w.Write(p.ToByteArray())
 }

@@ -6,7 +6,7 @@ import (
 )
 
 func (w *Writer) BeatmapInfoReply() {
-	p := NewPacket(constants.BanchoBeatmapInfoReply)
+	p := constants.NewPacket(constants.BanchoBeatmapInfoReply)
 	b := constants.BeatmapInfo{}
 	p.SetPacketData(osubinary.Marshal(b))
 	w.Write(p.ToByteArray())

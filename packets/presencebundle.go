@@ -11,7 +11,7 @@ func (w *Writer) PresenceBundle() {
 	for i := 0; i < len(objects.TOKENS); i++ {
 		t = append(t, objects.TOKENS[i].User.ID)
 	}
-	p := NewPacket(constants.BanchoUserPresenceBundle)
+	p := constants.NewPacket(constants.BanchoUserPresenceBundle)
 	p.SetPacketData(osubinary.IntArray(t))
 	w.Write(p.ToByteArray())
 }
