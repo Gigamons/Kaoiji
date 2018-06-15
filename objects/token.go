@@ -12,7 +12,6 @@ import (
 	"github.com/google/uuid"
 )
 
-var lockPackets = &sync.Mutex{}
 var lockAppend = &sync.Mutex{}
 
 // Token data
@@ -37,6 +36,7 @@ type Token struct {
 	Leaderboard     *consts.Leaderboard
 	LastPing        time.Time
 	Output          bytes.Buffer
+	LockPackets     *sync.Mutex
 }
 
 // TOKENS Global Variable for Token array.
@@ -44,7 +44,6 @@ var TOKENS []*Token
 
 // NewToken returns a Token that has a Token with a Token
 func NewToken(uuid uuid.UUID, lon float64, lat float64, u *consts.User) *Token {
-	lockAppend.Lock()
 	t := &Token{}
 	t.Token = uuid.String()
 	t.Status.Info.Lat = lat
@@ -70,8 +69,10 @@ func NewToken(uuid uuid.UUID, lon float64, lat float64, u *consts.User) *Token {
 		t.Status.Info.ClientPerm |= constants.Developer
 	}
 
-	t.SpectatorStream = NewSpectatorStream(t)
+	t.LockPackets = &sync.Mutex{}
+	lockAppend.Lock()
 	TOKENS = append(TOKENS, t)
+	t.SpectatorStream = NewSpectatorStream(t)
 	lockAppend.Unlock()
 	return t
 }
@@ -81,9 +82,12 @@ func DeleteToken(token string) {
 	lockAppend.Lock()
 	for i := 0; i < len(TOKENS); i++ {
 		if TOKENS[i].Token == token {
+			TOKENS[i].SpectatorStream.RemoveUser(TOKENS[i])
 			copy(TOKENS[i:], TOKENS[i+1:])
 			TOKENS[len(TOKENS)-1] = nil
 			TOKENS = TOKENS[:len(TOKENS)-1]
+			lockAppend.Unlock()
+			return
 		}
 	}
 	lockAppend.Unlock()
@@ -93,6 +97,7 @@ func DeleteOldTokens(userid int32) {
 	lockAppend.Lock()
 	for i := 0; i < len(TOKENS); i++ {
 		if TOKENS[i].User.ID == userid {
+			TOKENS[i].SpectatorStream.RemoveUser(TOKENS[i])
 			copy(TOKENS[i:], TOKENS[i+1:])
 			TOKENS[len(TOKENS)-1] = nil
 			TOKENS = TOKENS[:len(TOKENS)-1]
@@ -103,9 +108,7 @@ func DeleteOldTokens(userid int32) {
 
 // Write writes to our Client that'll get send to client on Next/This request.
 func (t *Token) Write(f []byte) {
-	lockPackets.Lock()
 	t.Output.Write(f)
-	lockPackets.Unlock()
 }
 
 // TokenExists return a boolean, true if exists else false
@@ -120,26 +123,20 @@ func TokenExists(token string) bool {
 
 // GetToken Returns a UserToken from a String if not exists return nil
 func GetToken(token string) *Token {
-	lockAppend.Lock()
 	for i := 0; i < len(TOKENS); i++ {
 		if TOKENS[i].Token == token {
-			lockAppend.Unlock()
 			return TOKENS[i]
 		}
 	}
-	lockAppend.Unlock()
 	return nil
 }
 
 // GetTokenByID Returns a UserToken from an UserID if not exists return nil
 func GetTokenByID(userid int32) *Token {
-	lockAppend.Lock()
 	for i := 0; i < len(TOKENS); i++ {
 		if TOKENS[i].User.ID == userid {
-			lockAppend.Unlock()
 			return TOKENS[i]
 		}
 	}
-	lockAppend.Unlock()
 	return nil
 }
