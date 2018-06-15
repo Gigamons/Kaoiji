@@ -118,7 +118,7 @@ func sendMessage(r io.Reader, pckt *bytes.Buffer, t *objects.Token) {
 // disconnectUser Our user has a Timeout nor He Disconnects, we're broadcast it to Everyone that that user got a Timeout / Disconnect.
 func disconnectUser(t *objects.Token) {
 	main := objects.GetStream("main")
-	pckt := packets.NewPacket(constants.BanchoHandleUserQuit)
+	pckt := constants.NewPacket(constants.BanchoHandleUserQuit)
 	pckt.SetPacketData(osubinary.Marshal(constants.UserQuitStruct{UserID: t.User.ID, ErrorState: int8(0)}))
 	objects.DeleteToken(t.Token)
 	main.Broadcast(pckt.ToByteArray(), nil)
@@ -131,7 +131,25 @@ func startSpectate(r io.Reader, t *objects.Token) {
 		return
 	}
 	HostToken := objects.GetTokenByID(i)
+	if HostToken.SpectatorStream == nil {
+		objects.NewSpectatorStream(HostToken)
+	}
 	HostToken.SpectatorStream.AddUser(t)
+}
+
+func stopSpectate(t *objects.Token) {
+	if len(t.SpectatorStream.StreamTokens) <= 1 {
+		t.SpectatorStream.RemoveSpectatorStream(t)
+	} else {
+		t.SpectatorStream.RemoveUser(t)
+	}
+}
+
+func spectatorFrame(r io.Reader, t *objects.Token) {
+	Frames := &objects.SpectatorFrame{}
+	osubinary.Unmarshal(r, Frames)
+
+	t.SpectatorStream.Broadcast(r, Frames)
 }
 
 // HandlePackets is the Main Packet handler.
@@ -188,6 +206,12 @@ func HandlePackets(w http.ResponseWriter, r *http.Request, t *objects.Token) {
 
 		case constants.ClientStartSpectating:
 			startSpectate(r, t)
+
+		case constants.ClientStopSpectating:
+			stopSpectate(t)
+
+		case constants.ClientSpectateFrames:
+			spectatorFrame(r, t)
 
 		default:
 			logPacket(&pkg)

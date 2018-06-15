@@ -23,7 +23,7 @@ import (
 
 func Err(w http.ResponseWriter) {
 	w.Header().Add("cho-token", "error")
-	p := packets.NewPacket(constants.BanchoLoginReply)
+	p := constants.NewPacket(constants.BanchoLoginReply)
 	p.SetPacketData(osubinary.Int32(constants.LoginException))
 	w.Write(p.ToByteArray())
 }

@@ -8,13 +8,12 @@ import (
 
 	"github.com/Gigamons/Kaoiji/constants"
 	"github.com/Gigamons/Kaoiji/objects"
-	"github.com/Gigamons/Kaoiji/packets"
 )
 
 // SendMessage Send a Message from given client to given target
 func SendMessage(t *objects.Token, Message string, Channel string) {
 	main := objects.GetStream("main")
-	p := packets.NewPacket(constants.BanchoSendMessage)
+	p := constants.NewPacket(constants.BanchoSendMessage)
 	msg := constants.MessageStruct{Message: Message, UserID: t.User.ID, Username: t.User.UserName, Target: Channel}
 
 	if main == nil {
@@ -26,6 +25,9 @@ func SendMessage(t *objects.Token, Message string, Channel string) {
 	if !strings.HasPrefix(Channel, "#") {
 		targetid := usertools.GetUserID(Channel)
 		targettoken := objects.GetTokenByID(int32(targetid))
+		if targettoken == nil {
+			return
+		}
 		msg.Target = t.User.UserName
 		p.SetPacketData(osubinary.Marshal(msg))
 		targettoken.Write(p.ToByteArray())
