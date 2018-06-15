@@ -32,6 +32,10 @@ func main() {
 	}
 	global.CONFIG = &conf
 
+	if conf.Server.Debug {
+		os.Setenv("DEBUG", "true")
+	}
+
 	defer helpers.DB.Close()
 
 	server.StartServer(conf.Server.Port)

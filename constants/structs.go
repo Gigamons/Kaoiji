@@ -96,6 +96,11 @@ type Packet struct {
 	PacketData   []byte
 }
 
+// NewPacket Create a new Packet
+func NewPacket(packetid int) Packet {
+	return Packet{int16(packetid), 0, nil}
+}
+
 // SetPacketData set's the Packet data
 func (p *Packet) SetPacketData(PacketData []byte) {
 	p.PacketLength = int32(len(PacketData))
