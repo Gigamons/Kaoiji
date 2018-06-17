@@ -30,11 +30,15 @@ func SendMessage(t *objects.Token, Message string, Channel string) {
 		}
 		msg.Target = t.User.UserName
 		p.SetPacketData(osubinary.Marshal(msg))
-		targettoken.Write(p.ToByteArray())
+		go targettoken.Write(p.ToByteArray())
 		return
 	}
 	if objects.HasChannelPermission(Channel, t) {
 		p.SetPacketData(osubinary.Marshal(msg))
-		main.Broadcast(p.ToByteArray(), t)
+		if strings.HasSuffix(Channel, "spectator") {
+			go t.SpectatorStream.BroadcastRaw(p.ToByteArray(), false, t, false)
+			return
+		}
+		go main.Broadcast(p.ToByteArray(), t)
 	}
 }

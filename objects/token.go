@@ -25,7 +25,7 @@ type Token struct {
 			Permissions int8
 			ClientPerm  int8
 			TimeZone    int8
-			CountryID   int8
+			CountryID   uint8
 			Lon         float64
 			Lat         float64
 			Rank        int32
@@ -108,7 +108,9 @@ func DeleteOldTokens(userid int32) {
 
 // Write writes to our Client that'll get send to client on Next/This request.
 func (t *Token) Write(f []byte) {
+	t.LockPackets.Lock()
 	t.Output.Write(f)
+	t.LockPackets.Unlock()
 }
 
 // TokenExists return a boolean, true if exists else false

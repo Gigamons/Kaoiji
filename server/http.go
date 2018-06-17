@@ -30,6 +30,7 @@ func main(w http.ResponseWriter, r *http.Request) {
 	} else if r.Header.Get("osu-token") != "" && !objects.TokenExists(r.Header.Get("osu-token")) {
 		w.WriteHeader(403)
 		fmt.Fprint(w, "Nya~")
+		logger.Infof("Token %s got an Disconnect! token not found.", r.Header.Get("osu-token"))
 		return
 	} else if r.Header.Get("osu-token") != "" && objects.TokenExists(r.Header.Get("osu-token")) {
 		handlers.HandlePackets(w, r, objects.GetToken(r.Header.Get("osu-token")))

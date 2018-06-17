@@ -15,6 +15,8 @@ import (
 
 	"github.com/Gigamons/Kaoiji/constants"
 	"github.com/Gigamons/Kaoiji/objects"
+	"github.com/Gigamons/common/consts"
+	"github.com/Gigamons/common/helpers"
 	"github.com/Gigamons/common/logger"
 	"github.com/Gigamons/common/tools/usertools"
 
@@ -60,12 +62,14 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	l := _parseLoginData(b)
 	userid := usertools.GetUserID(l.Username)
 	if userid < 1 {
+		logger.Infoln(l.Username, "Failed to Login!")
 		pw.UserID(constants.LoginFailed)
 		w.Write(pw.Bytes())
 		return
 	}
 	u := usertools.GetUser(userid)
 	if !u.CheckPassword(l.Password) {
+		logger.Infoln(l.Username, "Failed to Login!")
 		pw.UserID(constants.LoginFailed)
 		w.Write(pw.Bytes())
 		return
@@ -81,7 +85,23 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	t := objects.NewToken(uuid, 0, 0, u)
+	var use string
+
+	if r.Header.Get("X-Forwarded-For") != "127.0.0.1" || r.Header.Get("X-Forwarded-For") != "0.0.0.0" || r.Header.Get("X-Forwarded-For") != "" {
+		use = r.Header.Get("X-Forwarded-For")
+	}
+
+	if r.Header.Get("X-Real-IP") != "127.0.0.1" || r.Header.Get("X-Real-IP") != "0.0.0.0" || r.Header.Get("X-Real-IP") != "" {
+		use = r.Header.Get("X-Real-IP")
+	}
+
+	info := helpers.GetIPInfo(use)
+	if info == nil {
+		info = &consts.GeoIP{}
+	}
+
+	t := objects.NewToken(uuid, info.Location.Lon, info.Location.Lat, u)
+	t.Status.Info.CountryID = consts.ToCountryID(info.Country)
 
 	main.AddUser(t)
 
@@ -97,8 +117,11 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	pw.ChannelAvaible()
 	pw.Write(public.SendUserStats(t, true))
 	pasw := packets.NewWriter(t)
+	pasw.Write(public.SendUserStats(t, false))
 	pasw.PresenceSingle(t.User.ID)
 	main.Broadcast(pasw.Bytes(), nil)
+
+	logger.Infoln(l.Username, "has logged in!")
 
 	w.Write(pw.Bytes())
 }

@@ -8,6 +8,11 @@ import (
 type ChannelInfo struct {
 	ChannelName        string
 	ChannelDescription string
+}
+
+type ChannelInfoAnswer struct {
+	ChannelName        string
+	ChannelDescription string
 	UserCount          int16
 }
 
@@ -18,7 +23,7 @@ type ChannelPermissions struct {
 }
 
 type Channel struct {
-	CInfo    ChannelInfo
+	CInfo    ChannelInfoAnswer
 	CPerm    ChannelPermissions
 	AutoJoin bool
 }
@@ -27,11 +32,11 @@ type Channel struct {
 var CHANNELS []*Channel
 
 func init() {
-	CHANNELS = append(CHANNELS, &Channel{CInfo: ChannelInfo{ChannelName: "#osu", ChannelDescription: "Default osu! Channel"}, CPerm: ChannelPermissions{}, AutoJoin: true})
-	CHANNELS = append(CHANNELS, &Channel{CInfo: ChannelInfo{ChannelName: "#announce", ChannelDescription: "Default osu! Channel"}, CPerm: ChannelPermissions{ReadOnly: true}, AutoJoin: true})
-	CHANNELS = append(CHANNELS, &Channel{CInfo: ChannelInfo{ChannelName: "#userlog", ChannelDescription: "Default osu! Channel"}, CPerm: ChannelPermissions{ReadOnly: true}})
-	CHANNELS = append(CHANNELS, &Channel{CInfo: ChannelInfo{ChannelName: "#lobby", ChannelDescription: "Default osu! Channel"}, CPerm: ChannelPermissions{}})
-	CHANNELS = append(CHANNELS, &Channel{CInfo: ChannelInfo{ChannelName: "#admin", ChannelDescription: "Administrator channel of all Admins"}, CPerm: ChannelPermissions{AdminOnly: true}, AutoJoin: true})
+	CHANNELS = append(CHANNELS, &Channel{CInfo: ChannelInfoAnswer{ChannelName: "#osu", ChannelDescription: "Default osu! Channel"}, CPerm: ChannelPermissions{}, AutoJoin: true})
+	CHANNELS = append(CHANNELS, &Channel{CInfo: ChannelInfoAnswer{ChannelName: "#announce", ChannelDescription: "Default osu! Channel"}, CPerm: ChannelPermissions{ReadOnly: true}, AutoJoin: true})
+	CHANNELS = append(CHANNELS, &Channel{CInfo: ChannelInfoAnswer{ChannelName: "#userlog", ChannelDescription: "Default osu! Channel"}, CPerm: ChannelPermissions{ReadOnly: true}})
+	CHANNELS = append(CHANNELS, &Channel{CInfo: ChannelInfoAnswer{ChannelName: "#lobby", ChannelDescription: "Default osu! Channel"}, CPerm: ChannelPermissions{}})
+	CHANNELS = append(CHANNELS, &Channel{CInfo: ChannelInfoAnswer{ChannelName: "#admin", ChannelDescription: "Administrator channel of all Admins"}, CPerm: ChannelPermissions{AdminOnly: true}, AutoJoin: true})
 }
 
 // GetChannel returns an Channel object, if not exists return nil
@@ -71,6 +76,9 @@ func LeaveChannel(channelname string) bool {
 }
 
 func HasChannelPermission(channelname string, t *Token) bool {
+	if channelname == "#spectator" || channelname == "#multiplayer" {
+		return true
+	}
 	channel := GetChannel(channelname)
 	if channel == nil {
 		return false

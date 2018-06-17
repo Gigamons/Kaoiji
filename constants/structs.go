@@ -9,10 +9,10 @@ import (
 
 // BeatmapInfo is to send the BeatmapInfo to our client. IDK How but i managed to reverse engineer it.
 type BeatmapInfo struct {
-	ScoreID          int16
-	BeatmapID        int32
-	BeatmapSetID     int32
-	ForumThreadID    int32
+	ScoreID          uint16
+	BeatmapID        uint32
+	BeatmapSetID     uint32
+	ForumThreadID    uint32
 	RankedStatus     int8
 	OsuLetter        int8
 	CTBLetter        int8

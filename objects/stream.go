@@ -51,14 +51,11 @@ func (s *Stream) Broadcast(b []byte, t *Token) {
 }
 
 func GetStream(streamname string) *Stream {
-	streamLock.Lock()
 	for i := 0; i < len(STREAMS); i++ {
 		if STREAMS[i].StreamName == streamname {
-			streamLock.Unlock()
 			return STREAMS[i]
 		}
 	}
-	streamLock.Unlock()
 	return nil
 }
 

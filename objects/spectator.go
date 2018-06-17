@@ -1,13 +1,15 @@
 package objects
 
 import (
-	"bytes"
 	"io"
+	"io/ioutil"
 	"sync"
 
 	"github.com/Mempler/osubinary"
 
 	"github.com/Gigamons/Kaoiji/constants"
+	"github.com/Gigamons/common/helpers"
+	"github.com/Gigamons/common/logger"
 )
 
 type SpectatorStream struct {
@@ -18,7 +20,7 @@ type SpectatorStream struct {
 
 type SpectatorFrame struct {
 	Extra        int32
-	ReplayFrames ReplayFrame
+	ReplayFrames []ReplayFrame
 	Action       int8
 	ScoreFrame   ScoreFrame
 }
@@ -69,7 +71,7 @@ func (s *SpectatorStream) RemoveSpectatorStream(t *Token) {
 	for i := 0; i < len(s.StreamTokens); i++ {
 		s.RemoveUser(s.StreamTokens[i])
 	}
-	s = nil
+	s = NewSpectatorStream(t)
 }
 
 func (s *SpectatorStream) AddUser(t *Token) {
@@ -81,29 +83,37 @@ func (s *SpectatorStream) AddUser(t *Token) {
 	s.streamLock.Unlock()
 	p1 := constants.NewPacket(constants.BanchoFellowSpectatorJoined)
 	p2 := constants.NewPacket(constants.BanchoSpectatorJoined)
+	p3 := constants.NewPacket(constants.BanchoChannelJoinSuccess)
 	p1.SetPacketData(osubinary.Int32(t.User.ID))
 	p2.SetPacketData(osubinary.Int32(t.User.ID))
+	p3.SetPacketData(osubinary.BString("#spectator"))
 	t.SpectatorStream = s
-	s._Broadcast(p2.ToByteArray(), false, nil)
-	s._Broadcast(p1.ToByteArray(), false, t)
+	s.BroadcastRaw(p2.ToByteArray(), false, nil, true)
+	s.BroadcastRaw(p1.ToByteArray(), false, nil, false)
+	s.BroadcastRaw(p3.ToByteArray(), false, nil, false)
+}
+
+func (s *SpectatorStream) NoMap(t *Token) {
+	pack := constants.NewPacket(constants.BanchoSpectatorCantSpectate)
+	pack.SetPacketData(osubinary.Int32(t.User.ID))
+	s.BroadcastRaw(pack.ToByteArray(), false, nil, false)
 }
 
 func (s *SpectatorStream) RemoveUser(t *Token) {
 	for i := 0; i < len(s.StreamTokens); i++ {
 		if s.StreamTokens[i] == t {
-			buf := bytes.NewBuffer(nil)
 			p1 := constants.NewPacket(constants.BanchoFellowSpectatorLeft)
 			p2 := constants.NewPacket(constants.BanchoSpectatorLeft)
 			p1.SetPacketData(osubinary.Int32(s.StreamTokens[i].User.ID))
 			p2.SetPacketData(osubinary.Int32(s.StreamTokens[i].User.ID))
-			buf.Write(p1.ToByteArray())
-			buf.Write(p2.ToByteArray())
-			s.StreamTokens[i].Write(buf.Bytes())
+			s.BroadcastRaw(p1.ToByteArray(), false, nil, false)
+			s.BroadcastRaw(p2.ToByteArray(), false, nil, true)
 			s.streamLock.Lock()
 			copy(s.StreamTokens[i:], s.StreamTokens[i+1:])
 			s.StreamTokens[len(s.StreamTokens)-1] = nil
 			s.StreamTokens = s.StreamTokens[:len(s.StreamTokens)-1]
 			s.streamLock.Unlock()
+			t.SpectatorStream = nil
 		}
 	}
 }
@@ -120,28 +130,81 @@ func (s *SpectatorStream) AlreadySpectating(t *Token) bool {
 	return false
 }
 
-func (s *SpectatorStream) Broadcast(r io.Reader, frame *SpectatorFrame) {
-	f := *frame
-	bf := osubinary.Marshal(f)
-	pack := constants.NewPacket(constants.BanchoSpectateFrames)
-	pack.SetPacketData(bf)
-	z := []byte{}
-	if frame.ScoreFrame.ScoreV2 {
-		x, _ := osubinary.RDouble(r)
-		y, _ := osubinary.RDouble(r)
-		z = append(append(z, pack.ToByteArray()...), frame.ScoreFrame.ScoreV2F(x, y)...)
+func (s *SpectatorStream) Broadcast(r io.Reader) {
+	// f := SpectatorFrame{}
+	//
+	// f.Extra, _ = osubinary.RInt32(r)
+	// ReplayFrameCount, _ := osubinary.RUInt16(r)
+	// for i := uint16(0); i < ReplayFrameCount; i++ {
+	// 	Frame := ReplayFrame{}
+	// 	Frame.ButtonState, _ = osubinary.RInt8(r)
+	// 	Frame.Button, _ = osubinary.RInt8(r)
+	// 	Frame.MouseX, _ = osubinary.RFloat(r)
+	// 	Frame.MouseY, _ = osubinary.RFloat(r)
+	// 	Frame.Time, _ = osubinary.RInt32(r)
+	// }
+	// osubinary.Unmarshal(r, &f.ScoreFrame)
+	//
+	// xbuf := bytes.NewBuffer(nil)
+	// xbuf.Write(osubinary.Int32(f.Extra))
+	// xbuf.Write(osubinary.UInt16(ReplayFrameCount))
+	// for i := 0; i < len(f.ReplayFrames); i++ {
+	// 	xbuf.Write(osubinary.Int8(f.ReplayFrames[i].ButtonState))
+	// 	xbuf.Write(osubinary.Int8(f.ReplayFrames[i].Button))
+	// 	xbuf.Write(osubinary.Float(f.ReplayFrames[i].MouseX))
+	// 	xbuf.Write(osubinary.Float(f.ReplayFrames[i].MouseY))
+	// 	xbuf.Write(osubinary.Int32(f.ReplayFrames[i].Time))
+	// }
+	// xbuf.Write(osubinary.Marshal(f.ScoreFrame))
+	// if f.ScoreFrame.ScoreV2 {
+	// 	ComboPortion, _ := osubinary.RDouble(r)
+	// 	BonusPortion, _ := osubinary.RDouble(r)
+	// 	xbuf.Write(f.ScoreFrame.ScoreV2F(ComboPortion, BonusPortion))
+	// }
+	//
+	// pack := constants.NewPacket(constants.BanchoSpectateFrames)
+	// pack.SetPacketData(xbuf.Bytes())
+	x, err := ioutil.ReadAll(r)
+	if err != nil {
+		logger.Errorln(err)
 	}
-	s._Broadcast(z, true, s.HostToken)
+	logger.Debugln("Broadcasting", s.HostToken.User.UserName, "frames to", len(s.StreamTokens), "users")
+	pack := constants.NewPacket(constants.BanchoSpectateFrames)
+	pack.SetPacketData(x)
+	go s.BroadcastRaw(pack.ToByteArray(), true, s.HostToken, false)
 }
 
-func (s *SpectatorStream) _Broadcast(b []byte, isFrame bool, ignoreSelf *Token) {
+func (s *SpectatorStream) BroadcastRaw(b []byte, isFrame bool, ignoreSelf *Token, onlyHost bool) {
 	if !isFrame {
 		s.HostToken.Write(b)
 	}
+	if onlyHost {
+		s.HostToken.Write(b)
+		return
+	}
+	x := constants.UserStatsStruct{}
+
+	x.UserID = s.HostToken.User.ID
+	x.Status = s.HostToken.Status.Beatmap.Status
+	x.StatusText = s.HostToken.Status.Beatmap.StatusText
+	x.BeatmapChecksum = s.HostToken.Status.Beatmap.BeatmapChecksum
+	x.CurrentMods = s.HostToken.Status.Beatmap.CurrentMods
+	x.PlayMode = s.HostToken.Status.Beatmap.PlayMode
+	x.BeatmapID = s.HostToken.Status.Beatmap.BeatmapID
+	x.RankedScore = uint64(s.HostToken.Leaderboard.RankedScore)
+	x.Accuracy = float32(helpers.CalculateAccuracy(s.HostToken.Leaderboard.Count300, s.HostToken.Leaderboard.Count100, s.HostToken.Leaderboard.Count50, s.HostToken.Leaderboard.CountMiss, 0, 0, 0))
+	x.PlayCount = int32(s.HostToken.Leaderboard.Playcount)
+	x.TotalScore = uint64(s.HostToken.Leaderboard.TotalScore)
+	x.PeppyPoints = int16(s.HostToken.Leaderboard.PeppyPoints)
+
+	pckt := constants.NewPacket(constants.ClientSendUserStatus)
+	pckt.SetPacketData(osubinary.Marshal(x))
+
 	for i := 0; i < len(s.StreamTokens); i++ {
 		if s.StreamTokens[i] == ignoreSelf {
 			continue
 		}
-		s.StreamTokens[i].Write(b)
+		go s.StreamTokens[i].Write(pckt.ToByteArray())
+		go s.StreamTokens[i].Write(b)
 	}
 }

@@ -34,7 +34,7 @@ func sendUserStatus(r io.Reader, pckt *bytes.Buffer, t *objects.Token) {
 			t.AlreadyNotified = true
 			w := packets.NewWriter(t)
 			w.Announce("You've enabled the RX/AP Scoreboard.\nAP has Nerfed aim PP.\nRX has Nerfed speed PP.")
-			t.Write(w.Bytes())
+			go t.Write(w.Bytes())
 		}
 		if !t.User.Relax {
 			pckt.Write(public.SendUserStats(t, true))
@@ -58,6 +58,15 @@ func joinChannel(r io.Reader, pckt *bytes.Buffer, t *objects.Token) {
 	xw := objects.ChannelInfo{}
 	osubinary.Unmarshal(r, &xw)
 	yw.JoinChannel(xw.ChannelName)
+	yw.ChannelAvaible()
+	pckt.Write(yw.Bytes())
+}
+
+func leaveChannel(r io.Reader, pckt *bytes.Buffer, t *objects.Token) {
+	yw := packets.NewWriter(t)
+	xw := objects.ChannelInfo{}
+	osubinary.Unmarshal(r, &xw)
+	yw.LeaveChannel(xw.ChannelName)
 	yw.ChannelAvaible()
 	pckt.Write(yw.Bytes())
 }
@@ -112,7 +121,7 @@ func sendUserPresence(r io.Reader, pckt *bytes.Buffer, t *objects.Token) {
 func sendMessage(r io.Reader, pckt *bytes.Buffer, t *objects.Token) {
 	msg := constants.MessageStruct{}
 	osubinary.Unmarshal(r, &msg)
-	public.SendMessage(t, msg.Message, msg.Target)
+	go public.SendMessage(t, msg.Message, msg.Target)
 }
 
 // disconnectUser Our user has a Timeout nor He Disconnects, we're broadcast it to Everyone that that user got a Timeout / Disconnect.
@@ -121,7 +130,7 @@ func disconnectUser(t *objects.Token) {
 	pckt := constants.NewPacket(constants.BanchoHandleUserQuit)
 	pckt.SetPacketData(osubinary.Marshal(constants.UserQuitStruct{UserID: t.User.ID, ErrorState: int8(0)}))
 	objects.DeleteToken(t.Token)
-	main.Broadcast(pckt.ToByteArray(), nil)
+	go main.Broadcast(pckt.ToByteArray(), nil)
 }
 
 func startSpectate(r io.Reader, t *objects.Token) {
@@ -132,24 +141,29 @@ func startSpectate(r io.Reader, t *objects.Token) {
 	}
 	HostToken := objects.GetTokenByID(i)
 	if HostToken.SpectatorStream == nil {
-		objects.NewSpectatorStream(HostToken)
+		HostToken.SpectatorStream = objects.NewSpectatorStream(HostToken)
 	}
-	HostToken.SpectatorStream.AddUser(t)
+	go HostToken.SpectatorStream.AddUser(t)
 }
 
 func stopSpectate(t *objects.Token) {
 	if len(t.SpectatorStream.StreamTokens) <= 1 {
-		t.SpectatorStream.RemoveSpectatorStream(t)
+		go t.SpectatorStream.RemoveSpectatorStream(t)
 	} else {
-		t.SpectatorStream.RemoveUser(t)
+		go t.SpectatorStream.RemoveUser(t)
 	}
 }
 
-func spectatorFrame(r io.Reader, t *objects.Token) {
-	Frames := &objects.SpectatorFrame{}
-	osubinary.Unmarshal(r, Frames)
+func specNoMap(t *objects.Token) {
+	t.SpectatorStream.NoMap(t)
+}
 
-	t.SpectatorStream.Broadcast(r, Frames)
+func spectatorFrame(r io.Reader, t *objects.Token) {
+	go t.SpectatorStream.Broadcast(r)
+}
+
+func beatmapInfo(r io.Reader, t *objects.Token) {
+	packets.BeatmapInfoRequest(r)
 }
 
 // HandlePackets is the Main Packet handler.
@@ -192,6 +206,9 @@ func HandlePackets(w http.ResponseWriter, r *http.Request, t *objects.Token) {
 		case constants.ClientChannelJoin:
 			joinChannel(r, pckt, t)
 
+		case constants.ClientChannelLeave:
+			leaveChannel(r, pckt, t)
+
 		case constants.ClientFriendAdd:
 			addFriend(r, t)
 
@@ -212,6 +229,12 @@ func HandlePackets(w http.ResponseWriter, r *http.Request, t *objects.Token) {
 
 		case constants.ClientSpectateFrames:
 			spectatorFrame(r, t)
+
+		case constants.ClientCantSpectate:
+			specNoMap(t)
+
+		case constants.ClientBeatmapInfoRequest:
+			beatmapInfo(r, t)
 
 		default:
 			logPacket(&pkg)

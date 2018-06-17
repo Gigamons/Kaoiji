@@ -35,6 +35,11 @@ func (w *Writer) JoinChannel(channelname string) {
 	}
 }
 
+func (w *Writer) LeaveChannel(channelname string) {
+	objects.LeaveChannel(channelname)
+	w.KickOutOfChannel(channelname)
+}
+
 func (w *Writer) JoinChannelSuccess(channelname string) {
 	p := constants.NewPacket(constants.BanchoChannelJoinSuccess)
 	p.SetPacketData(osubinary.BString(channelname))
