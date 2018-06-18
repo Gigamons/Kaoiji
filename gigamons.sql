@@ -134,17 +134,6 @@ CREATE TABLE `friends` (
   `friendid` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Dumping data for table `friends`
---
-
-INSERT INTO `friends` (`userid`, `friendid`) VALUES
-(101, 121),
-(101, 113),
-(101, 114),
-(101, 122),
-(122, 101);
-
 -- --------------------------------------------------------
 
 --
