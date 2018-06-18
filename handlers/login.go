@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -59,7 +60,10 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		Err(w)
 	}
 
-	l := _parseLoginData(b)
+	l, err := _parseLoginData(b)
+	if err != nil {
+		Err(w)
+	}
 	userid := usertools.GetUserID(l.Username)
 	if userid < 1 {
 		logger.Infoln(l.Username, "Failed to Login!")
@@ -142,10 +146,16 @@ type securityHash struct {
 	UniqueMD5 string
 }
 
-func _parseLoginData(b []byte) loginData {
+func _parseLoginData(b []byte) (loginData, error) {
 	s := string(b)
 	sa := strings.Split(s, "\n")
+	if len(sa) < 2 {
+		return loginData{}, errors.New("no")
+	}
 	x := strings.Split(sa[2], "|")
+	if len(x) < 4 {
+		return loginData{}, errors.New("no")
+	}
 	y := loginData{Username: sa[0], Password: sa[1], OsuVersion: x[0]}
 	timeOffset, err := strconv.Atoi(x[1])
 	if err != nil {
@@ -154,6 +164,9 @@ func _parseLoginData(b []byte) loginData {
 	y.TimeOffset = timeOffset
 
 	sec := strings.Split(x[3], ":")
+	if len(sec) < 4 {
+		return loginData{}, errors.New("no")
+	}
 	BlockNonFriendDM := len(x) >= 4 && x[4] == "1"
 	y.BlockNonFriendDM = BlockNonFriendDM
 
@@ -162,5 +175,5 @@ func _parseLoginData(b []byte) loginData {
 	y.SecurityHash.DiskMD5 = sec[4]
 	y.SecurityHash.UniqueMD5 = sec[5]
 
-	return y
+	return y, nil
 }

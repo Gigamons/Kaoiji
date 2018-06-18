@@ -34,6 +34,8 @@ type Token struct {
 	AlreadyNotified bool
 	SpectatorStream *SpectatorStream
 	Leaderboard     *consts.Leaderboard
+	MPLobby         *Lobby
+	MPSlot          int8
 	LastPing        time.Time
 	Output          bytes.Buffer
 	LockPackets     *sync.Mutex
@@ -82,6 +84,12 @@ func DeleteToken(token string) {
 	lockAppend.Lock()
 	for i := 0; i < len(TOKENS); i++ {
 		if TOKENS[i].Token == token {
+			s := GetStream("main")
+			l := GetStream("lobby")
+			if s != nil && l != nil {
+				s.RemoveUser(TOKENS[i])
+				l.RemoveUser(TOKENS[i])
+			}
 			TOKENS[i].SpectatorStream.RemoveUser(TOKENS[i])
 			copy(TOKENS[i:], TOKENS[i+1:])
 			TOKENS[len(TOKENS)-1] = nil
@@ -97,6 +105,12 @@ func DeleteOldTokens(userid int32) {
 	lockAppend.Lock()
 	for i := 0; i < len(TOKENS); i++ {
 		if TOKENS[i].User.ID == userid {
+			s := GetStream("main")
+			l := GetStream("lobby")
+			if s != nil && l != nil {
+				s.RemoveUser(TOKENS[i])
+				l.RemoveUser(TOKENS[i])
+			}
 			TOKENS[i].SpectatorStream.RemoveUser(TOKENS[i])
 			copy(TOKENS[i:], TOKENS[i+1:])
 			TOKENS[len(TOKENS)-1] = nil

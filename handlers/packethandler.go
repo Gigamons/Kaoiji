@@ -166,6 +166,47 @@ func beatmapInfo(r io.Reader, t *objects.Token) {
 	packets.BeatmapInfoRequest(r)
 }
 
+func LobbyJoin(t *objects.Token) {
+	s := objects.GetStream("lobby")
+	if s == nil {
+		return
+	}
+	s.AddUser(t)
+	objects.GetLobbys(t)
+}
+
+func LobbyLeave(t *objects.Token) {
+	s := objects.GetStream("lobby")
+	if s == nil {
+		return
+	}
+	s.RemoveUser(t)
+}
+
+func JoinMPLobby(r io.Reader, t *objects.Token) {
+	i, _ := osubinary.RUInt32(r)
+	s, _ := osubinary.RBString(r)
+	_, l := objects.GetLobby(uint16(i))
+	if l == nil {
+		return
+	}
+	objects.JoinLobby(l, s, t)
+}
+
+func LeaveMPLobby(t *objects.Token) {
+	objects.LeaveLobby(t)
+}
+
+func CreateMPLobby(r io.Reader, t *objects.Token) {
+	l := objects.ReadLobby(r)
+	objects.NewLobbyC(l, t)
+}
+
+func SwitchLobbySlot(r io.Reader, t *objects.Token) {
+	slot, _ := osubinary.RInt8(r)
+	t.MPLobby.SwitchSlot(slot, t)
+}
+
 // HandlePackets is the Main Packet handler.
 func HandlePackets(w http.ResponseWriter, r *http.Request, t *objects.Token) {
 	b, err := ioutil.ReadAll(r.Body)
@@ -235,6 +276,24 @@ func HandlePackets(w http.ResponseWriter, r *http.Request, t *objects.Token) {
 
 		case constants.ClientBeatmapInfoRequest:
 			beatmapInfo(r, t)
+
+		case constants.ClientLobbyJoin:
+			LobbyJoin(t)
+
+		case constants.ClientLobbyPart:
+			LobbyLeave(t)
+
+		case constants.ClientMatchCreate:
+			CreateMPLobby(r, t)
+
+		case constants.ClientMatchJoin:
+			JoinMPLobby(r, t)
+
+		case constants.ClientMatchPart:
+			LeaveMPLobby(t)
+
+		case constants.ClientMatchChangeSlot:
+			SwitchLobbySlot(r, t)
 
 		default:
 			logPacket(&pkg)
