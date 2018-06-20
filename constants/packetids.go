@@ -1,6 +1,6 @@
 package constants
 
-// PacketID list by Itsyuka https =//github.com/Itsyuka/osu-packet under MIT License
+// PacketID list by Itsyuka https://github.com/Itsyuka/osu-packet under MIT License
 const (
 	ClientSendUserStatus             = 0
 	ClientSendIrcMessage             = 1
