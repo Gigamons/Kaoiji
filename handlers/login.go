@@ -116,6 +116,9 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	pw.UserPresence(t)
 	pw.SendFriendlist()
 	pw.PresenceBundle()
+	for i := 0; i < len(objects.TOKENS); i++ {
+		public.SendUserStats(t, false)
+	}
 	pw.LoginPermissions()
 	pw.AutoJoinChannel()
 	pw.ChannelAvaible()

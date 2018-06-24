@@ -189,7 +189,7 @@ func (s *SpectatorStream) BroadcastRaw(b []byte, isFrame bool, ignoreSelf *Token
 	x.StatusText = s.HostToken.Status.Beatmap.StatusText
 	x.BeatmapChecksum = s.HostToken.Status.Beatmap.BeatmapChecksum
 	x.CurrentMods = s.HostToken.Status.Beatmap.CurrentMods
-	x.PlayMode = s.HostToken.Status.Beatmap.PlayMode
+	x.PlayMode = int8(s.HostToken.Status.Beatmap.PlayMode)
 	x.BeatmapID = s.HostToken.Status.Beatmap.BeatmapID
 	x.RankedScore = uint64(s.HostToken.Leaderboard.RankedScore)
 	x.Accuracy = float32(helpers.CalculateAccuracy(s.HostToken.Leaderboard.Count300, s.HostToken.Leaderboard.Count100, s.HostToken.Leaderboard.Count50, s.HostToken.Leaderboard.CountMiss, 0, 0, 0))

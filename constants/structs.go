@@ -27,7 +27,7 @@ type ClientSendUserStatusStruct struct {
 	StatusText      string
 	BeatmapChecksum string
 	CurrentMods     uint32
-	PlayMode        int8
+	PlayMode        uint8
 	BeatmapID       int32
 }
 

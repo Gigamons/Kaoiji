@@ -5,6 +5,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Mempler/osubinary"
+
 	"github.com/Gigamons/Kaoiji/constants"
 	"github.com/Gigamons/Kaoiji/global"
 	"github.com/Gigamons/common/consts"
@@ -57,8 +59,11 @@ func NewToken(uuid uuid.UUID, lon float64, lat float64, u *consts.User) *Token {
 	t.Status.Info.Permissions |= constants.Userperm
 
 	if helpers.HasPrivileges(consts.BAT, u) {
-		t.Status.Info.Permissions |= constants.Administrator
+		t.Status.Info.Permissions |= constants.BAT
 		t.Status.Info.ClientPerm |= constants.BAT
+	}
+	if helpers.HasPrivileges(consts.AdminChatMod, u) {
+		t.Status.Info.Permissions |= constants.Administrator
 	}
 	if global.CONFIG.Server.FreeDirect {
 		t.Status.Info.ClientPerm |= constants.Supporter
@@ -86,15 +91,20 @@ func DeleteToken(token string) {
 		if TOKENS[i].Token == token {
 			s := GetStream("main")
 			l := GetStream("lobby")
-			if s != nil && l != nil {
+			if s != nil {
 				s.RemoveUser(TOKENS[i])
+			}
+			if l != nil {
 				l.RemoveUser(TOKENS[i])
 			}
+			p := constants.NewPacket(constants.BanchoHandleUserQuit)
+			p.SetPacketData(osubinary.Marshal(constants.UserQuitStruct{TOKENS[i].User.ID, 0}))
 			TOKENS[i].SpectatorStream.RemoveUser(TOKENS[i])
 			copy(TOKENS[i:], TOKENS[i+1:])
 			TOKENS[len(TOKENS)-1] = nil
 			TOKENS = TOKENS[:len(TOKENS)-1]
 			lockAppend.Unlock()
+			s.Broadcast(p.ToByteArray(), nil)
 			return
 		}
 	}
@@ -107,14 +117,19 @@ func DeleteOldTokens(userid int32) {
 		if TOKENS[i].User.ID == userid {
 			s := GetStream("main")
 			l := GetStream("lobby")
-			if s != nil && l != nil {
+			if s != nil {
 				s.RemoveUser(TOKENS[i])
+			}
+			if l != nil {
 				l.RemoveUser(TOKENS[i])
 			}
+			p := constants.NewPacket(constants.BanchoHandleUserQuit)
+			p.SetPacketData(osubinary.Marshal(constants.UserQuitStruct{TOKENS[i].User.ID, 0}))
 			TOKENS[i].SpectatorStream.RemoveUser(TOKENS[i])
 			copy(TOKENS[i:], TOKENS[i+1:])
 			TOKENS[len(TOKENS)-1] = nil
 			TOKENS = TOKENS[:len(TOKENS)-1]
+			s.Broadcast(p.ToByteArray(), nil)
 		}
 	}
 	lockAppend.Unlock()
@@ -122,17 +137,17 @@ func DeleteOldTokens(userid int32) {
 
 // Write writes to our Client that'll get send to client on Next/This request.
 func (t *Token) Write(f []byte) {
-	//t.LockPackets.Lock()
+	t.LockPackets.Lock()
 	t.Output.Write(f)
-	//t.LockPackets.Unlock()
+	t.LockPackets.Unlock()
 }
 
 func (t *Token) Read() []byte {
 	var o []byte
-	//t.LockPackets.Lock()
+	t.LockPackets.Lock()
 	o = t.Output.Bytes()
 	t.Output.Reset()
-	//t.LockPackets.Unlock()
+	t.LockPackets.Unlock()
 	return o
 }
 

@@ -7,6 +7,6 @@ import (
 
 // SetUserStatus of given Token
 func SetUserStatus(t *objects.Token) {
-	t.Leaderboard = usertools.GetLeaderboard(t.User, t.Status.Beatmap.PlayMode)
-	t.Leaderboard.Position = usertools.GetLeaderboardPosition(t.User, t.Status.Beatmap.PlayMode)
+	t.Leaderboard = usertools.GetLeaderboard(t.User, int8(t.Status.Beatmap.PlayMode))
+	t.Leaderboard.Position = usertools.GetLeaderboardPosition(t.User, int8(t.Status.Beatmap.PlayMode))
 }

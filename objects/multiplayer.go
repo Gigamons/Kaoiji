@@ -28,14 +28,14 @@ type Lobby struct {
 	ScoreType   int8
 	TeamType    int8
 	FreeMods    int8
-	Seed        int32 // or random number, idk.
+	Seed        uint32 // or random number, idk.
 }
 
 type LobbySlot struct {
 	Status uint8
+	UserID int32
 	Team   int8
 	Mods   uint32
-	UserID int32
 }
 
 var LOBBYS []*Lobby
@@ -67,6 +67,9 @@ func NewLobbyC(l *Lobby, t *Token) {
 }
 
 func JoinLobby(l *Lobby, password string, t *Token) {
+	if t == nil {
+		return
+	}
 	_, s := GetLobby(l.ID)
 	f := true
 	for i := 0; i < len(s.Slots); i++ {
@@ -80,7 +83,7 @@ func JoinLobby(l *Lobby, password string, t *Token) {
 			}
 
 			s.Slots[i].UserID = t.User.ID
-			s.Slots[i].Status = 4
+			s.Slots[i].Status = constants.SlotNotReady
 			s.Slots[i].Team = 0
 			s.Slots[i].Mods = 0
 
@@ -109,7 +112,7 @@ func LeaveLobby(t *Token) {
 		if t.MPLobby.Slots[i].UserID == t.User.ID {
 			if t.MPLobby.Running {
 				t.MPLobby.Slots[i].UserID = -1
-				t.MPLobby.Slots[i].Status = 128
+				t.MPLobby.Slots[i].Status = constants.SlotQuit
 				t.MPSlot = 0
 				UpdateMatch(t.MPLobby)
 				t.MPLobby = nil
@@ -117,7 +120,7 @@ func LeaveLobby(t *Token) {
 			} else {
 				t.MPLobby.Slots[i].UserID = -1
 				t.MPLobby.Slots[i].Team = 0
-				t.MPLobby.Slots[i].Status = 2
+				t.MPLobby.Slots[i].Status = constants.SlotOpen
 				t.MPLobby.Slots[i].Mods = 0
 				t.MPSlot = 0
 				UpdateMatch(t.MPLobby)
@@ -136,7 +139,7 @@ func (l *Lobby) SwitchSlot(SlotID int8, t *Token) {
 		l.Slots[SlotID].Team = l.Slots[t.MPSlot].Team
 		l.Slots[SlotID].Mods = l.Slots[t.MPSlot].Mods
 		l.Slots[t.MPSlot].UserID = -1
-		l.Slots[t.MPSlot].Status = 2
+		l.Slots[t.MPSlot].Status = constants.SlotOpen
 		l.Slots[t.MPSlot].Team = 1
 		l.Slots[t.MPSlot].Mods = 0
 		t.MPSlot = SlotID
@@ -204,23 +207,25 @@ func WriteLobby(l *Lobby, h bool) []byte {
 	buf.Write(osubinary.BString(l.BeatmapName))
 	buf.Write(osubinary.UInt32(l.BeatmapID))
 	buf.Write(osubinary.BString(l.BeatmapMD5))
-	for i := 0; i < 16; i++ {
+	for i := 0; i < 15; i++ {
 		buf.Write(osubinary.UInt8(l.Slots[i].Status))
 	}
-	for i := 0; i < 16; i++ {
+	for i := 0; i < 15; i++ {
 		buf.Write(osubinary.Int8(l.Slots[i].Team))
 	}
-	for i := 0; i < 16; i++ {
+	for i := 0; i < 15; i++ {
 		buf.Write(osubinary.Int32(l.Slots[i].UserID))
 	}
 	buf.Write(osubinary.Int32(l.Host))
 	buf.Write(osubinary.Int8(l.PlayMode))
 	buf.Write(osubinary.Int8(l.ScoreType))
 	buf.Write(osubinary.Int8(l.FreeMods))
-	for i := 0; i < 16; i++ {
-		buf.Write(osubinary.UInt32(l.Slots[i].Mods))
+	if l.FreeMods&constants.Freemod > 0 {
+		for i := 0; i < 15; i++ {
+			buf.Write(osubinary.UInt32(l.Slots[i].Mods))
+		}
 	}
-	buf.Write(osubinary.Int32(l.Seed))
+	buf.Write(osubinary.UInt32(l.Seed))
 	return buf.Bytes()
 }
 
@@ -235,21 +240,23 @@ func ReadLobby(r io.Reader) *Lobby {
 	l.BeatmapName, _ = osubinary.RBString(r)
 	l.BeatmapID, _ = osubinary.RUInt32(r)
 	l.BeatmapMD5, _ = osubinary.RBString(r)
-	for i := 0; i < 16; i++ {
+	for i := 0; i < 15; i++ {
 		l.Slots[i].Status, _ = osubinary.RUInt8(r)
 	}
-	for i := 0; i < 16; i++ {
+	for i := 0; i < 15; i++ {
 		l.Slots[i].Team, _ = osubinary.RInt8(r)
 	}
-	for i := 0; i < 16; i++ {
+	for i := 0; i < 15; i++ {
 		l.Slots[i].UserID, _ = osubinary.RInt32(r)
 	}
 	l.PlayMode, _ = osubinary.RInt8(r)
 	l.ScoreType, _ = osubinary.RInt8(r)
 	l.FreeMods, _ = osubinary.RInt8(r)
-	for i := 0; i < 16; i++ {
-		l.Slots[i].Mods, _ = osubinary.RUInt32(r)
+	if l.FreeMods&constants.Freemod > 0 {
+		for i := 0; i < 15; i++ {
+			l.Slots[i].Mods, _ = osubinary.RUInt32(r)
+		}
 	}
-	l.Seed, _ = osubinary.RInt32(r)
+	l.Seed, _ = osubinary.RUInt32(r)
 	return l
 }

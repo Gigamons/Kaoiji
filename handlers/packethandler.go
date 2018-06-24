@@ -217,79 +217,79 @@ func HandlePackets(b []byte, t *objects.Token) {
 		switch pkg.PacketID {
 
 		case constants.ClientSendUserStatus:
-			go sendUserStatus(r, t)
+			sendUserStatus(r, t)
 
 		case constants.ClientExit:
-			go disconnectUser(t)
+			disconnectUser(t)
 
 		case constants.ClientSendIrcMessage:
-			go sendMessage(r, t)
+			sendMessage(r, t)
 
 		case constants.ClientSendIrcMessagePrivate:
-			go sendMessage(r, t)
+			sendMessage(r, t)
 
 		case constants.ClientRequestStatusUpdate:
-			go t.Write(public.SendUserStats(t, true))
+			t.Write(public.SendUserStats(t, true))
 
 		case constants.ClientPong:
 			t.LastPing = time.Now()
 
 		case constants.ClientReceiveUpdates:
-			go t.Write(public.SendUserStats(t, true))
+			t.Write(public.SendUserStats(t, true))
 
 		case constants.ClientChannelJoin:
-			go joinChannel(r, t)
+			joinChannel(r, t)
 
 		case constants.ClientChannelLeave:
-			go leaveChannel(r, t)
+			leaveChannel(r, t)
 
 		case constants.ClientFriendAdd:
-			go addFriend(r, t)
+			addFriend(r, t)
 
 		case constants.ClientFriendRemove:
-			go removeFriend(r, t)
+			removeFriend(r, t)
 
 		case constants.ClientUserStatsRequest:
-			go updateUserStats(r, t)
+			updateUserStats(r, t)
 
 		case constants.ClientUserPresenceRequest:
-			go sendUserPresence(r, t)
+			sendUserPresence(r, t)
 
 		case constants.ClientStartSpectating:
-			go startSpectate(r, t)
+			startSpectate(r, t)
 
 		case constants.ClientStopSpectating:
-			go stopSpectate(t)
+			stopSpectate(t)
 
 		case constants.ClientSpectateFrames:
-			go spectatorFrame(r, t)
+			spectatorFrame(r, t)
 
 		case constants.ClientCantSpectate:
-			go specNoMap(t)
+			specNoMap(t)
 
 		case constants.ClientBeatmapInfoRequest:
-			go beatmapInfo(r, t)
+			beatmapInfo(r, t)
 
 		case constants.ClientLobbyJoin:
-			go LobbyJoin(t)
+			LobbyJoin(t)
 
 		case constants.ClientLobbyPart:
-			go LobbyLeave(t)
+			LobbyLeave(t)
 
 		case constants.ClientMatchCreate:
-			go CreateMPLobby(r, t)
+			CreateMPLobby(r, t)
 
 		case constants.ClientMatchJoin:
-			go JoinMPLobby(r, t)
+			JoinMPLobby(r, t)
 
 		case constants.ClientMatchPart:
-			go LeaveMPLobby(t)
+			LeaveMPLobby(t)
 
 		case constants.ClientMatchChangeSlot:
-			go SwitchLobbySlot(r, t)
+			SwitchLobbySlot(r, t)
 
 		default:
-			go logPacket(&pkg)
+			logPacket(&pkg)
 
 		}
 	}

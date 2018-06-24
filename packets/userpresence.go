@@ -12,7 +12,7 @@ func (w *Writer) UserPresence(t *objects.Token) {
 	if t == nil {
 		return
 	}
-	a := constants.UserPresenceStruct{int32(t.User.ID), string(t.User.UserName), int8(t.Status.Info.TimeZone), int8(t.Status.Info.CountryID), int8(t.Status.Info.ClientPerm), float64(t.Status.Info.Lon), float64(t.Status.Info.Lat), int32(t.Status.Info.Rank)}
+	a := constants.UserPresenceStruct{int32(t.User.ID), string(t.User.UserName), int8(t.Status.Info.TimeZone), int8(t.Status.Info.CountryID), int8(t.Status.Info.Permissions), float64(t.Status.Info.Lon), float64(t.Status.Info.Lat), int32(t.Status.Info.Rank)}
 	p.SetPacketData(osubinary.Marshal(a))
 	w.Write(p.ToByteArray())
 }
