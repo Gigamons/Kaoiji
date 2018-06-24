@@ -108,16 +108,16 @@ func LeaveLobby(t *Token) {
 	for i := 0; i < len(t.MPLobby.Slots); i++ {
 		if t.MPLobby.Slots[i].UserID == t.User.ID {
 			if t.MPLobby.Running {
-				t.MPLobby.Slots[i].UserID = 0
+				t.MPLobby.Slots[i].UserID = -1
 				t.MPLobby.Slots[i].Status = 128
 				t.MPSlot = 0
 				UpdateMatch(t.MPLobby)
 				t.MPLobby = nil
 				break
 			} else {
-				t.MPLobby.Slots[i].UserID = 0
+				t.MPLobby.Slots[i].UserID = -1
 				t.MPLobby.Slots[i].Team = 0
-				t.MPLobby.Slots[i].Status = 1
+				t.MPLobby.Slots[i].Status = 2
 				t.MPLobby.Slots[i].Mods = 0
 				t.MPSlot = 0
 				UpdateMatch(t.MPLobby)
@@ -135,7 +135,7 @@ func (l *Lobby) SwitchSlot(SlotID int8, t *Token) {
 		l.Slots[SlotID].Status = l.Slots[t.MPSlot].Status
 		l.Slots[SlotID].Team = l.Slots[t.MPSlot].Team
 		l.Slots[SlotID].Mods = l.Slots[t.MPSlot].Mods
-		l.Slots[t.MPSlot].UserID = 0
+		l.Slots[t.MPSlot].UserID = -1
 		l.Slots[t.MPSlot].Status = 2
 		l.Slots[t.MPSlot].Team = 1
 		l.Slots[t.MPSlot].Mods = 0
@@ -213,6 +213,7 @@ func WriteLobby(l *Lobby, h bool) []byte {
 	for i := 0; i < 16; i++ {
 		buf.Write(osubinary.Int32(l.Slots[i].UserID))
 	}
+	buf.Write(osubinary.Int32(l.Host))
 	buf.Write(osubinary.Int8(l.PlayMode))
 	buf.Write(osubinary.Int8(l.ScoreType))
 	buf.Write(osubinary.Int8(l.FreeMods))

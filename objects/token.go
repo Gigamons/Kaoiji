@@ -122,9 +122,18 @@ func DeleteOldTokens(userid int32) {
 
 // Write writes to our Client that'll get send to client on Next/This request.
 func (t *Token) Write(f []byte) {
-	t.LockPackets.Lock()
+	//t.LockPackets.Lock()
 	t.Output.Write(f)
-	t.LockPackets.Unlock()
+	//t.LockPackets.Unlock()
+}
+
+func (t *Token) Read() []byte {
+	var o []byte
+	//t.LockPackets.Lock()
+	o = t.Output.Bytes()
+	t.Output.Reset()
+	//t.LockPackets.Unlock()
+	return o
 }
 
 // TokenExists return a boolean, true if exists else false

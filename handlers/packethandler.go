@@ -3,8 +3,6 @@ package handlers
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
-	"net/http"
 	"time"
 
 	"github.com/Gigamons/common/logger"
@@ -25,7 +23,7 @@ func init() {
 }
 
 // sendUserStatus sends the UserStatus
-func sendUserStatus(r io.Reader, pckt *bytes.Buffer, t *objects.Token) {
+func sendUserStatus(r io.Reader, t *objects.Token) {
 	x := constants.ClientSendUserStatusStruct{}
 	osubinary.Unmarshal(r, &x)
 	t.Status.Beatmap = x
@@ -37,38 +35,38 @@ func sendUserStatus(r io.Reader, pckt *bytes.Buffer, t *objects.Token) {
 			go t.Write(w.Bytes())
 		}
 		if !t.User.Relax {
-			pckt.Write(public.SendUserStats(t, true))
+			t.Write(public.SendUserStats(t, true))
 		} else {
-			pckt.Write(public.SendUserStats(t, false))
+			t.Write(public.SendUserStats(t, false))
 		}
 		t.User.Relax = true
 	} else {
 		if t.User.Relax {
-			pckt.Write(public.SendUserStats(t, true))
+			t.Write(public.SendUserStats(t, true))
 		} else {
-			pckt.Write(public.SendUserStats(t, false))
+			t.Write(public.SendUserStats(t, false))
 		}
 		t.User.Relax = false
 	}
 }
 
 // joinChannel sends a Join successfull/fail to the Client.
-func joinChannel(r io.Reader, pckt *bytes.Buffer, t *objects.Token) {
+func joinChannel(r io.Reader, t *objects.Token) {
 	yw := packets.NewWriter(t)
 	xw := objects.ChannelInfo{}
 	osubinary.Unmarshal(r, &xw)
 	yw.JoinChannel(xw.ChannelName)
 	yw.ChannelAvaible()
-	pckt.Write(yw.Bytes())
+	t.Write(yw.Bytes())
 }
 
-func leaveChannel(r io.Reader, pckt *bytes.Buffer, t *objects.Token) {
+func leaveChannel(r io.Reader, t *objects.Token) {
 	yw := packets.NewWriter(t)
 	xw := objects.ChannelInfo{}
 	osubinary.Unmarshal(r, &xw)
 	yw.LeaveChannel(xw.ChannelName)
 	yw.ChannelAvaible()
-	pckt.Write(yw.Bytes())
+	t.Write(yw.Bytes())
 }
 
 // addFriend adds a Friend ofc!
@@ -92,19 +90,19 @@ func removeFriend(r io.Reader, t *objects.Token) {
 }
 
 // updateUserStats updates the User stats for that user, (No fetching out of SQL)
-func updateUserStats(r io.Reader, pckt *bytes.Buffer) {
+func updateUserStats(r io.Reader, t *objects.Token) {
 	_, err := osubinary.RIntArray(r)
 	if err != nil {
 		logger.Errorln(err)
 		return
 	}
 	for y := 0; y < len(objects.TOKENS); y++ {
-		pckt.Write(public.SendUserStats(objects.TOKENS[y], false))
+		t.Write(public.SendUserStats(objects.TOKENS[y], false))
 	}
 }
 
 // sendUserPresence Send the User Precense of the Given UserID.
-func sendUserPresence(r io.Reader, pckt *bytes.Buffer, t *objects.Token) {
+func sendUserPresence(r io.Reader, t *objects.Token) {
 	i, err := osubinary.RIntArray(r)
 	yw := packets.NewWriter(t)
 	if err != nil {
@@ -114,11 +112,11 @@ func sendUserPresence(r io.Reader, pckt *bytes.Buffer, t *objects.Token) {
 	for y := 0; y < len(i); y++ {
 		yw.UserPresence(objects.GetTokenByID(i[y]))
 	}
-	pckt.Write(yw.Bytes())
+	t.Write(yw.Bytes())
 }
 
 // sendMessage User sends a MSG Packet to us, we're handling it and send it to the User Target
-func sendMessage(r io.Reader, pckt *bytes.Buffer, t *objects.Token) {
+func sendMessage(r io.Reader, t *objects.Token) {
 	msg := constants.MessageStruct{}
 	osubinary.Unmarshal(r, &msg)
 	go public.SendMessage(t, msg.Message, msg.Target)
@@ -208,14 +206,9 @@ func SwitchLobbySlot(r io.Reader, t *objects.Token) {
 }
 
 // HandlePackets is the Main Packet handler.
-func HandlePackets(w http.ResponseWriter, r *http.Request, t *objects.Token) {
-	b, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		logger.Errorln(err)
-		return
-	}
+func HandlePackets(b []byte, t *objects.Token) {
+
 	pkgs := packets.GetPackets(b)
-	pckt := bytes.NewBuffer([]byte{})
 	t.LastPing = time.Now()
 
 	for i := 0; i < len(pkgs); i++ {
@@ -224,85 +217,82 @@ func HandlePackets(w http.ResponseWriter, r *http.Request, t *objects.Token) {
 		switch pkg.PacketID {
 
 		case constants.ClientSendUserStatus:
-			sendUserStatus(r, pckt, t)
+			go sendUserStatus(r, t)
 
 		case constants.ClientExit:
-			disconnectUser(t)
+			go disconnectUser(t)
 
 		case constants.ClientSendIrcMessage:
-			sendMessage(r, pckt, t)
+			go sendMessage(r, t)
 
 		case constants.ClientSendIrcMessagePrivate:
-			sendMessage(r, pckt, t)
+			go sendMessage(r, t)
 
 		case constants.ClientRequestStatusUpdate:
-			pckt.Write(public.SendUserStats(t, true))
+			go t.Write(public.SendUserStats(t, true))
 
 		case constants.ClientPong:
 			t.LastPing = time.Now()
 
 		case constants.ClientReceiveUpdates:
-			pckt.Write(public.SendUserStats(t, true))
+			go t.Write(public.SendUserStats(t, true))
 
 		case constants.ClientChannelJoin:
-			joinChannel(r, pckt, t)
+			go joinChannel(r, t)
 
 		case constants.ClientChannelLeave:
-			leaveChannel(r, pckt, t)
+			go leaveChannel(r, t)
 
 		case constants.ClientFriendAdd:
-			addFriend(r, t)
+			go addFriend(r, t)
 
 		case constants.ClientFriendRemove:
-			removeFriend(r, t)
+			go removeFriend(r, t)
 
 		case constants.ClientUserStatsRequest:
-			updateUserStats(r, pckt)
+			go updateUserStats(r, t)
 
 		case constants.ClientUserPresenceRequest:
-			sendUserPresence(r, pckt, t)
+			go sendUserPresence(r, t)
 
 		case constants.ClientStartSpectating:
-			startSpectate(r, t)
+			go startSpectate(r, t)
 
 		case constants.ClientStopSpectating:
-			stopSpectate(t)
+			go stopSpectate(t)
 
 		case constants.ClientSpectateFrames:
-			spectatorFrame(r, t)
+			go spectatorFrame(r, t)
 
 		case constants.ClientCantSpectate:
-			specNoMap(t)
+			go specNoMap(t)
 
 		case constants.ClientBeatmapInfoRequest:
-			beatmapInfo(r, t)
+			go beatmapInfo(r, t)
 
 		case constants.ClientLobbyJoin:
-			LobbyJoin(t)
+			go LobbyJoin(t)
 
 		case constants.ClientLobbyPart:
-			LobbyLeave(t)
+			go LobbyLeave(t)
 
 		case constants.ClientMatchCreate:
-			CreateMPLobby(r, t)
+			go CreateMPLobby(r, t)
 
 		case constants.ClientMatchJoin:
-			JoinMPLobby(r, t)
+			go JoinMPLobby(r, t)
 
 		case constants.ClientMatchPart:
-			LeaveMPLobby(t)
+			go LeaveMPLobby(t)
 
 		case constants.ClientMatchChangeSlot:
-			SwitchLobbySlot(r, t)
+			go SwitchLobbySlot(r, t)
 
 		default:
-			logPacket(&pkg)
+			go logPacket(&pkg)
 
 		}
 	}
-	w.Write(t.Output.Bytes())
-	w.Write(pckt.Bytes())
-	t.Output.Reset()
 }
 
 func logPacket(pkg *constants.Packet) {

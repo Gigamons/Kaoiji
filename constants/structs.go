@@ -21,6 +21,7 @@ type BeatmapInfo struct {
 	BeatmapChecksumm string
 }
 
+// ClientSendUserStatusStruct for user status
 type ClientSendUserStatusStruct struct {
 	Status          int8
 	StatusText      string
@@ -50,6 +51,7 @@ type Config struct {
 	}
 }
 
+// MessageStruct for Messages
 type MessageStruct struct {
 	Username string
 	Message  string
@@ -57,6 +59,7 @@ type MessageStruct struct {
 	UserID   int32
 }
 
+// UserPresenceStruct for User presences
 type UserPresenceStruct struct {
 	UserID      int32
 	Username    string
@@ -68,11 +71,13 @@ type UserPresenceStruct struct {
 	Rank        int32
 }
 
+// UserQuitStruct if a user quits/timeout
 type UserQuitStruct struct {
 	UserID     int32
 	ErrorState int8
 }
 
+// UserStatsStruct Stats ofc.
 type UserStatsStruct struct {
 	UserID          int32
 	Status          int8

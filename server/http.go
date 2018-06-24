@@ -1,11 +1,14 @@
 package server
 
 import (
+	"compress/gzip"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"runtime/debug"
 	"strconv"
+	"strings"
 
 	"github.com/Gigamons/common/logger"
 	"github.com/Gigamons/common/tools/usertools"
@@ -33,7 +36,41 @@ func main(w http.ResponseWriter, r *http.Request) {
 		logger.Infof("Token %s got an Disconnect! token not found.", r.Header.Get("osu-token"))
 		return
 	} else if r.Header.Get("osu-token") != "" && objects.TokenExists(r.Header.Get("osu-token")) {
-		handlers.HandlePackets(w, r, objects.GetToken(r.Header.Get("osu-token")))
+		if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+			t := objects.GetToken(r.Header.Get("osu-token"))
+			w.Write(t.Read())
+			b, err := ioutil.ReadAll(r.Body)
+			if err != nil {
+				logger.Errorln(err)
+				return
+			}
+			go handlers.HandlePackets(b, t)
+		} else {
+			flush, ok := w.(http.Flusher)
+			if !ok {
+				t := objects.GetToken(r.Header.Get("osu-token"))
+				w.Write(t.Read())
+				b, err := ioutil.ReadAll(r.Body)
+				if err != nil {
+					logger.Errorln(err)
+					return
+				}
+				go handlers.HandlePackets(b, t)
+				return
+			}
+			w.Header().Set("Content-Encoding", "gzip")
+			gz := gzip.NewWriter(w)
+			defer gz.Close()
+			t := objects.GetToken(r.Header.Get("osu-token"))
+			gz.Write(t.Read())
+			b, err := ioutil.ReadAll(r.Body)
+			if err != nil {
+				logger.Errorln(err)
+				return
+			}
+			go handlers.HandlePackets(b, t)
+			flush.Flush()
+		}
 	}
 }
 
