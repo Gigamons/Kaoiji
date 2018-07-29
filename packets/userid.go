@@ -9,5 +9,5 @@ import (
 func (w *Writer) UserID(userid int32) {
 	p := constants.NewPacket(constants.BanchoLoginReply)
 	p.SetPacketData(osubinary.Int32(userid))
-	w.Write(p.ToByteArray())
+	w.WritePacket(p)
 }

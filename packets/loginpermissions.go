@@ -9,5 +9,5 @@ import (
 func (w *Writer) LoginPermissions() {
 	p := constants.NewPacket(constants.BanchoLoginPermissions)
 	p.SetPacketData(osubinary.Int32(int32(w._token.Status.Info.ClientPerm)))
-	w.Write(p.ToByteArray())
+	w.WritePacket(p)
 }

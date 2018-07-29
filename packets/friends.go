@@ -13,7 +13,7 @@ func (w *Writer) SendFriendlist() {
 	flist := usertools.GetFriends(w._token.User)
 	p := constants.NewPacket(constants.BanchoFriendsList)
 	p.SetPacketData(osubinary.IntArray(flist))
-	w.Write(p.ToByteArray())
+	w.WritePacket(p)
 }
 
 func AddFriend(u *consts.User, f *consts.User) bool {

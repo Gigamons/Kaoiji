@@ -3,6 +3,7 @@ package packets
 import (
 	"bytes"
 
+	"github.com/Gigamons/Kaoiji/constants"
 	"github.com/Gigamons/Kaoiji/objects"
 )
 
@@ -22,6 +23,10 @@ func (w *Writer) SetToken(t *objects.Token) {
 
 func (w *Writer) Write(b []byte) {
 	w._buffer.Write(b)
+}
+
+func (w *Writer) WritePacket(b *constants.Packet) {
+	w._buffer.Write(b.ToByteArray())
 }
 
 // ToByteArray returns a ByteArray

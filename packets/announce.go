@@ -9,5 +9,5 @@ import (
 func (w *Writer) Announce(s string) {
 	p := constants.NewPacket(constants.BanchoAnnounce)
 	p.SetPacketData(osubinary.BString(s))
-	w.Write(p.ToByteArray())
+	w.WritePacket(p)
 }

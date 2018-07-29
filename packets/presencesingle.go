@@ -8,5 +8,5 @@ import (
 func (w *Writer) PresenceSingle(userid int32) {
 	p := constants.NewPacket(constants.BanchoUserPresenceSingle)
 	p.SetPacketData(osubinary.Int32(userid))
-	w.Write(p.ToByteArray())
+	w.WritePacket(p)
 }

@@ -9,5 +9,5 @@ import (
 func (w *Writer) SendUserStats(x constants.UserStatsStruct) {
 	p := constants.NewPacket(constants.BanchoHandleOsuUpdate)
 	p.SetPacketData(osubinary.Marshal(x))
-	w.Write(p.ToByteArray())
+	w.WritePacket(p)
 }

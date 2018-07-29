@@ -102,8 +102,8 @@ type Packet struct {
 }
 
 // NewPacket Create a new Packet
-func NewPacket(packetid int) Packet {
-	return Packet{int16(packetid), 0, nil}
+func NewPacket(packetid int) *Packet {
+	return &Packet{int16(packetid), 0, nil}
 }
 
 // SetPacketData set's the Packet data

@@ -9,5 +9,5 @@ import (
 func (w *Writer) ProtocolVersion(i int32) {
 	p := constants.NewPacket(constants.BanchoProtocolNegotiation)
 	p.SetPacketData(osubinary.Int32(i))
-	w.Write(p.ToByteArray())
+	w.WritePacket(p)
 }

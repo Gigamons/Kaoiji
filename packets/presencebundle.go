@@ -13,5 +13,5 @@ func (w *Writer) PresenceBundle() {
 	}
 	p := constants.NewPacket(constants.BanchoUserPresenceBundle)
 	p.SetPacketData(osubinary.IntArray(t))
-	w.Write(p.ToByteArray())
+	w.WritePacket(p)
 }
