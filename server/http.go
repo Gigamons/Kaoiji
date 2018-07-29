@@ -44,7 +44,7 @@ func main(w http.ResponseWriter, r *http.Request) {
 				logger.Errorln(err)
 				return
 			}
-			go handlers.HandlePackets(b, t)
+			handlers.HandlePackets(b, t)
 		} else {
 			flush, ok := w.(http.Flusher)
 			if !ok {
@@ -55,7 +55,7 @@ func main(w http.ResponseWriter, r *http.Request) {
 					logger.Errorln(err)
 					return
 				}
-				go handlers.HandlePackets(b, t)
+				handlers.HandlePackets(b, t)
 				return
 			}
 			w.Header().Set("Content-Encoding", "gzip")
@@ -68,7 +68,7 @@ func main(w http.ResponseWriter, r *http.Request) {
 				logger.Errorln(err)
 				return
 			}
-			go handlers.HandlePackets(b, t)
+			handlers.HandlePackets(b, t)
 			flush.Flush()
 		}
 	}
