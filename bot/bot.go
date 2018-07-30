@@ -1,8 +1,11 @@
 package bot
 
 import (
+	"encoding/hex"
 	"fmt"
 	"strings"
+
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/Gigamons/common/tools/usertools"
 
@@ -58,6 +61,35 @@ var Commands = []*Command{
 		xf = strings.Trim(xf, " ")
 		announce(nil, xf)
 	}},
+	&Command{"!clear", consts.AdminChatMod, []string{}, false, func(t *objects.Token, args ...string) {
+		pw := []byte{}
+		for _, tok := range objects.TOKENS {
+			pw = append(pw, deletemessages(tok.User.ID)...)
+		}
+		main := objects.GetStream("main")
+		main.Broadcast(pw, nil)
+		message(t, "Chat cleared!")
+	}},
+	/* TMP COMMAND */
+	&Command{"!adduser", consts.AdminDeveloper, []string{"Username", "Password"}, false, func(t *objects.Token, args ...string) {
+		u := args[1]
+		p := args[2]
+		hash, err := helpers.MD5String(p)
+		if err != nil {
+			message(t, "could not create useraccount!", err.Error())
+			return
+		}
+		phash, err := bcrypt.GenerateFromPassword([]byte(hex.EncodeToString(hash)), -10)
+		if err != nil {
+			message(t, "could not create useraccount!", err.Error())
+			return
+		}
+		helpers.DB.Exec("INSERT INTO users (username, username_safe, password) VALUES (?, ?, ?) ", u, strings.ToLower(strings.Replace(u, " ", "_", -1)), string(phash))
+		helpers.DB.Exec("INSERT INTO users_status () VALUES ()")
+		helpers.DB.Exec("INSERT INTO leaderboard () VALUES ()")
+		helpers.DB.Exec("INSERT INTO leaderboard_rx () VALUES ()")
+		message(t, "Created user with the username of", u, "and the password of", p, hex.EncodeToString(hash), string(phash))
+	}},
 }
 
 func init() {
@@ -103,6 +135,12 @@ func message(t *objects.Token, msg ...string) {
 	p := constants.NewPacket(constants.BanchoSendMessage)
 	p.SetPacketData(osubinary.Marshal(constants.MessageStruct{"GigaBot", fmt.Sprintln(SToIN(msg...)...), "GigaBot", 100}))
 	t.Write(p.ToByteArray())
+}
+
+func deletemessages(userid int32) []byte {
+	p := constants.NewPacket(constants.BanchoUserSilenced)
+	p.SetPacketData(osubinary.Int32(userid))
+	return p.ToByteArray()
 }
 
 func SToIN(s ...string) []interface{} {
