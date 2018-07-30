@@ -8,6 +8,7 @@ import (
 	"runtime/debug"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Gigamons/Kaoiji/handlers/public"
 	"github.com/Mempler/osubinary"
@@ -109,28 +110,30 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	main.AddUser(t)
 
+	/* For self */
 	pw.SetToken(t)
-
 	pw.ProtocolVersion(19)
 	pw.UserID(int32(t.User.ID))
 	pw.UserPresence(t)
 	pw.SendFriendlist()
 	pw.PresenceBundle()
-	for i := 0; i < len(objects.TOKENS); i++ {
-		public.SendUserStats(t, false)
-	}
+	pw.Write(public.SendUserStats(t, true))
 	pw.LoginPermissions()
 	pw.AutoJoinChannel()
 	pw.ChannelAvaible()
-	pw.Write(public.SendUserStats(t, true))
+	pw.Silence(int32(u.Status.SilencedUntil.Unix() - time.Now().Unix())) // Possible overflow, but WHO CARES ?!?
+
+	/* For everyone who is in the main stream */
 	pasw := packets.NewWriter(t)
-	pasw.Write(public.SendUserStats(t, false))
 	pasw.PresenceSingle(t.User.ID)
+	pasw.Write(public.SendUserStats(t, false))
 	main.Broadcast(pasw.Bytes(), nil)
 
 	logger.Infoln(l.Username, "has logged in!")
-
 	w.Write(pw.Bytes())
+	for i := 0; i < len(objects.TOKENS); i++ {
+		public.SendUserStats(t, false)
+	}
 }
 
 type loginData struct {
