@@ -3,7 +3,9 @@ package bot
 import (
 	"encoding/hex"
 	"fmt"
+	"strconv"
 	"strings"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -90,6 +92,67 @@ var Commands = []*Command{
 		helpers.DB.Exec("INSERT INTO leaderboard_rx () VALUES ()")
 		message(t, "Created user with the username of", u, "and the password of", p, hex.EncodeToString(hash), string(phash))
 	}},
+	&Command{"!silence", consts.AdminChatMod, []string{"Username", "date"}, false, func(t *objects.Token, Args ...string) {
+		target := usertools.GetUser(usertools.GetUserID(Args[1]))
+		if target == nil {
+			return
+		}
+		var outms int64 = 0
+		Args = append(Args[:0], Args[2:]...)
+		for _, s := range Args {
+			r := []rune(s)
+			if len(r) < 2 {
+				continue
+			}
+			letter := r[len(r)-1]
+			tim, err := strconv.Atoi(string(r[:len(r)-1]))
+			if err != nil {
+				continue
+			}
+			switch letter {
+			case 's':
+				outms += int64(tim)
+			case 'm':
+				outms += int64(tim) * 60
+			case 'h':
+				outms += int64(tim) * 60 * 60
+			case 'd':
+				outms += int64(tim) * 60 * 60 * 24
+			case 'w':
+				outms += int64(tim) * 60 * 60 * 24 * 7
+			case 'M':
+				outms += int64(tim) * 60 * 60 * 24 * 31
+			case 'y':
+				outms += int64(tim)*60*60*24*31*12 - 60*60*24*7
+			default:
+				message(t, "Unknown format", strconv.Itoa(tim), string(letter))
+			}
+		}
+		x := time.Unix(outms+time.Now().Unix(), 0)
+		helpers.DB.Exec("UPDATE users_status SET silenced_until=? WHERE id=?", x, target.ID)
+
+		targetToken := objects.GetTokenByID(target.ID)
+		if targetToken == nil {
+			return
+		}
+		Silence(targetToken, int32(outms)) // ppfff overflow but WHO CARES ?!?
+		t.User = usertools.GetUser(int(target.ID))
+		t.Leaderboard = usertools.GetLeaderboard(t.User, int8(t.Status.Beatmap.PlayMode))
+	}},
+	&Command{"!unsilence", consts.AdminChatMod, []string{"Username"}, false, func(t *objects.Token, Args ...string) {
+		target := usertools.GetUser(usertools.GetUserID(Args[1]))
+		if target == nil {
+			return
+		}
+		helpers.DB.Exec("UPDATE users_status SET silenced_until=? WHERE id=?", time.Now(), target.ID)
+		targetToken := objects.GetTokenByID(target.ID)
+		if targetToken == nil {
+			return
+		}
+		Silence(targetToken, int32(0)) // ppfff overflow but WHO CARES ?!?
+		t.User = usertools.GetUser(int(target.ID))
+		t.Leaderboard = usertools.GetLeaderboard(t.User, int8(t.Status.Beatmap.PlayMode))
+	}},
 }
 
 func init() {
@@ -141,6 +204,15 @@ func deletemessages(userid int32) []byte {
 	p := constants.NewPacket(constants.BanchoUserSilenced)
 	p.SetPacketData(osubinary.Int32(userid))
 	return p.ToByteArray()
+}
+
+func Silence(t *objects.Token, timeout int32) {
+	if timeout < 0 {
+		timeout = 0
+	}
+	p := constants.NewPacket(constants.BanchoBanInfo)
+	p.SetPacketData(osubinary.Int32(timeout))
+	t.Write(p.ToByteArray())
 }
 
 func SToIN(s ...string) []interface{} {

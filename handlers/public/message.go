@@ -2,6 +2,7 @@ package public
 
 import (
 	"strings"
+	"time"
 
 	"github.com/Gigamons/common/tools/usertools"
 	"github.com/Mempler/osubinary"
@@ -17,10 +18,7 @@ func SendMessage(t *objects.Token, Message string, Channel string) {
 	p := constants.NewPacket(constants.BanchoSendMessage)
 	msg := constants.MessageStruct{Message: Message, UserID: t.User.ID, Username: t.User.UserName, Target: Channel}
 
-	if main == nil {
-		return
-	}
-	if t == nil {
+	if main == nil || t == nil {
 		return
 	}
 	x := strings.Split(Message, " ")
@@ -42,6 +40,9 @@ func SendMessage(t *objects.Token, Message string, Channel string) {
 		}
 		cmd.Func(t, x...)
 	}
+	if t.User.Status.SilencedUntil.Unix() > time.Now().Unix() {
+		return
+	}
 	if !strings.HasPrefix(Channel, "#") {
 		targetid := usertools.GetUserID(Channel)
 		targettoken := objects.GetTokenByID(int32(targetid))
@@ -51,6 +52,12 @@ func SendMessage(t *objects.Token, Message string, Channel string) {
 		msg.Target = t.User.UserName
 		p.SetPacketData(osubinary.Marshal(msg))
 		go targettoken.Write(p.ToByteArray())
+		if targettoken.User.Status.SilencedUntil.Unix() > time.Now().Unix() {
+			pcktsilenced := constants.NewPacket(constants.BanchoTargetIsSilenced)
+			msg.Target = targettoken.User.UserName
+			pcktsilenced.SetPacketData(osubinary.Marshal(msg))
+			go t.Write(pcktsilenced.ToByteArray())
+		}
 		return
 	}
 	if objects.HasChannelPermission(Channel, t) {
