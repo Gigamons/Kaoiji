@@ -5,9 +5,9 @@ import (
 	"github.com/Mempler/osubinary"
 )
 
-// UserID returns a binary encoded userid
-func (w *Writer) UserID(userid int32) {
+// LoginReply returns a binary encoded Login Reply
+func (w *Writer) LoginReply(reply int32) {
 	p := constants.NewPacket(constants.BanchoLoginReply)
-	p.SetPacketData(osubinary.Int32(userid))
-	w.WritePacket(p)
+	p.SetPacketData(osubinary.Int32(reply))
+	w.Write(p)
 }

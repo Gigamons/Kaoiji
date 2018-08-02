@@ -6,6 +6,7 @@ import (
 	"github.com/Mempler/osubinary"
 )
 
+/* TODO FINISH THIS */
 func BeatmapInfoRequest(r io.Reader) []string {
 	beatmaplength, _ := osubinary.RUInt32(r)
 

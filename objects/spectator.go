@@ -21,13 +21,13 @@ type SpectatorStream struct {
 type SpectatorFrame struct {
 	Extra        int32
 	ReplayFrames []ReplayFrame
-	Action       int8
+	Action       byte
 	ScoreFrame   ScoreFrame
 }
 
 type ReplayFrame struct {
-	ButtonState int8
-	Button      int8
+	ButtonState byte
+	Button      byte
 	MouseX      float32
 	MouseY      float32
 	Time        int32
@@ -35,7 +35,7 @@ type ReplayFrame struct {
 
 type ScoreFrame struct {
 	Time         int32
-	ID           int8
+	ID           byte
 	Count300     uint16
 	Count100     uint16
 	Count50      uint16
@@ -84,8 +84,8 @@ func (s *SpectatorStream) AddUser(t *Token) {
 	p1 := constants.NewPacket(constants.BanchoFellowSpectatorJoined)
 	p2 := constants.NewPacket(constants.BanchoSpectatorJoined)
 	p3 := constants.NewPacket(constants.BanchoChannelJoinSuccess)
-	p1.SetPacketData(osubinary.Int32(t.User.ID))
-	p2.SetPacketData(osubinary.Int32(t.User.ID))
+	p1.SetPacketData(osubinary.UInt32(t.User.ID))
+	p2.SetPacketData(osubinary.UInt32(t.User.ID))
 	p3.SetPacketData(osubinary.BString("#spectator"))
 	t.SpectatorStream = s
 	s.BroadcastRaw(p2.ToByteArray(), false, nil, true)
@@ -95,7 +95,7 @@ func (s *SpectatorStream) AddUser(t *Token) {
 
 func (s *SpectatorStream) NoMap(t *Token) {
 	pack := constants.NewPacket(constants.BanchoSpectatorCantSpectate)
-	pack.SetPacketData(osubinary.Int32(t.User.ID))
+	pack.SetPacketData(osubinary.UInt32(t.User.ID))
 	s.BroadcastRaw(pack.ToByteArray(), false, nil, false)
 }
 
@@ -104,8 +104,8 @@ func (s *SpectatorStream) RemoveUser(t *Token) {
 		if s.StreamTokens[i] == t {
 			p1 := constants.NewPacket(constants.BanchoFellowSpectatorLeft)
 			p2 := constants.NewPacket(constants.BanchoSpectatorLeft)
-			p1.SetPacketData(osubinary.Int32(s.StreamTokens[i].User.ID))
-			p2.SetPacketData(osubinary.Int32(s.StreamTokens[i].User.ID))
+			p1.SetPacketData(osubinary.UInt32(s.StreamTokens[i].User.ID))
+			p2.SetPacketData(osubinary.UInt32(s.StreamTokens[i].User.ID))
 			s.BroadcastRaw(p1.ToByteArray(), false, nil, false)
 			s.BroadcastRaw(p2.ToByteArray(), false, nil, true)
 			s.streamLock.Lock()
@@ -189,13 +189,13 @@ func (s *SpectatorStream) BroadcastRaw(b []byte, isFrame bool, ignoreSelf *Token
 	x.StatusText = s.HostToken.Status.Beatmap.StatusText
 	x.BeatmapChecksum = s.HostToken.Status.Beatmap.BeatmapChecksum
 	x.CurrentMods = s.HostToken.Status.Beatmap.CurrentMods
-	x.PlayMode = int8(s.HostToken.Status.Beatmap.PlayMode)
+	x.PlayMode = s.HostToken.Status.Beatmap.PlayMode
 	x.BeatmapID = s.HostToken.Status.Beatmap.BeatmapID
-	x.RankedScore = uint64(s.HostToken.Leaderboard.RankedScore)
+	x.RankedScore = s.HostToken.Leaderboard.RankedScore
 	x.Accuracy = float32(helpers.CalculateAccuracy(s.HostToken.Leaderboard.Count300, s.HostToken.Leaderboard.Count100, s.HostToken.Leaderboard.Count50, s.HostToken.Leaderboard.CountMiss, 0, 0, 0))
-	x.PlayCount = int32(s.HostToken.Leaderboard.Playcount)
-	x.TotalScore = uint64(s.HostToken.Leaderboard.TotalScore)
-	x.PeppyPoints = int16(s.HostToken.Leaderboard.PeppyPoints)
+	x.PlayCount = s.HostToken.Leaderboard.Playcount
+	x.TotalScore = s.HostToken.Leaderboard.TotalScore
+	x.PeppyPoints = uint16(s.HostToken.Leaderboard.PeppyPoints)
 
 	pckt := constants.NewPacket(constants.ClientSendUserStatus)
 	pckt.SetPacketData(osubinary.Marshal(x))
@@ -204,7 +204,7 @@ func (s *SpectatorStream) BroadcastRaw(b []byte, isFrame bool, ignoreSelf *Token
 		if s.StreamTokens[i] == ignoreSelf {
 			continue
 		}
-		go s.StreamTokens[i].Write(pckt.ToByteArray())
-		go s.StreamTokens[i].Write(b)
+		s.StreamTokens[i].Write(pckt.ToByteArray())
+		s.StreamTokens[i].Write(b)
 	}
 }

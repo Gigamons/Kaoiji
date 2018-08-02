@@ -15,7 +15,7 @@ import (
 type Lobby struct {
 	ID          uint16
 	Running     bool
-	Type        int8
+	Type        byte
 	Mods        uint32
 	Name        string
 	Password    string
@@ -23,18 +23,18 @@ type Lobby struct {
 	BeatmapID   uint32
 	BeatmapMD5  string
 	Slots       [16]LobbySlot
-	Host        int32
-	PlayMode    int8
-	ScoreType   int8
-	TeamType    int8
-	FreeMods    int8
+	Host        uint32
+	PlayMode    byte
+	ScoreType   byte
+	TeamType    byte
+	FreeMods    byte
 	Seed        uint32 // or random number, idk.
 }
 
 type LobbySlot struct {
 	Status uint8
 	UserID int32
-	Team   int8
+	Team   byte
 	Mods   uint32
 }
 
@@ -82,12 +82,12 @@ func JoinLobby(l *Lobby, password string, t *Token) {
 				return
 			}
 
-			s.Slots[i].UserID = t.User.ID
+			s.Slots[i].UserID = int32(t.User.ID)
 			s.Slots[i].Status = constants.SlotNotReady
 			s.Slots[i].Team = 0
 			s.Slots[i].Mods = 0
 
-			t.MPSlot = int8(i)
+			t.MPSlot = byte(i)
 			t.MPLobby = s
 
 			pckt := constants.NewPacket(constants.BanchoMatchJoinSuccess)
@@ -109,7 +109,7 @@ func LeaveLobby(t *Token) {
 		return
 	}
 	for i := 0; i < len(t.MPLobby.Slots); i++ {
-		if t.MPLobby.Slots[i].UserID == t.User.ID {
+		if t.MPLobby.Slots[i].UserID == int32(t.User.ID) {
 			if t.MPLobby.Running {
 				t.MPLobby.Slots[i].UserID = -1
 				t.MPLobby.Slots[i].Status = constants.SlotQuit
@@ -131,7 +131,7 @@ func LeaveLobby(t *Token) {
 	}
 }
 
-func (l *Lobby) SwitchSlot(SlotID int8, t *Token) {
+func (l *Lobby) SwitchSlot(SlotID byte, t *Token) {
 	logger.Debugln(t.User.UserName, "Switched his slot from", t.MPSlot)
 	if l.Slots[SlotID].Status == 1 || l.Slots[SlotID].Status == 128 {
 		l.Slots[SlotID].UserID = l.Slots[t.MPSlot].UserID
@@ -191,7 +191,7 @@ func WriteLobby(l *Lobby, h bool) []byte {
 	buf := bytes.NewBuffer(nil)
 	buf.Write(osubinary.UInt16(l.ID))
 	buf.Write(osubinary.Bool(l.Running))
-	buf.Write(osubinary.Int8(l.Type))
+	buf.Write([]byte{l.Type})
 	buf.Write(osubinary.UInt32(l.Mods))
 	buf.Write(osubinary.BString(l.Name))
 	if h {
@@ -211,15 +211,15 @@ func WriteLobby(l *Lobby, h bool) []byte {
 		buf.Write(osubinary.UInt8(l.Slots[i].Status))
 	}
 	for i := 0; i < 15; i++ {
-		buf.Write(osubinary.Int8(l.Slots[i].Team))
+		buf.Write([]byte{l.Slots[i].Team})
 	}
 	for i := 0; i < 15; i++ {
 		buf.Write(osubinary.Int32(l.Slots[i].UserID))
 	}
-	buf.Write(osubinary.Int32(l.Host))
-	buf.Write(osubinary.Int8(l.PlayMode))
-	buf.Write(osubinary.Int8(l.ScoreType))
-	buf.Write(osubinary.Int8(l.FreeMods))
+	buf.Write(osubinary.UInt32(l.Host))
+	buf.Write([]byte{l.PlayMode})
+	buf.Write([]byte{l.ScoreType})
+	buf.Write([]byte{l.FreeMods})
 	if l.FreeMods&constants.Freemod > 0 {
 		for i := 0; i < 15; i++ {
 			buf.Write(osubinary.UInt32(l.Slots[i].Mods))
@@ -233,7 +233,7 @@ func ReadLobby(r io.Reader) *Lobby {
 	l := &Lobby{}
 	l.ID, _ = osubinary.RUInt16(r)
 	l.Running, _ = osubinary.RBool(r)
-	l.Type, _ = osubinary.RInt8(r)
+	l.Type, _ = osubinary.RByte(r)
 	l.Mods, _ = osubinary.RUInt32(r)
 	l.Name, _ = osubinary.RBString(r)
 	l.Password, _ = osubinary.RBString(r)
@@ -244,14 +244,14 @@ func ReadLobby(r io.Reader) *Lobby {
 		l.Slots[i].Status, _ = osubinary.RUInt8(r)
 	}
 	for i := 0; i < 15; i++ {
-		l.Slots[i].Team, _ = osubinary.RInt8(r)
+		l.Slots[i].Team, _ = osubinary.RByte(r)
 	}
 	for i := 0; i < 15; i++ {
 		l.Slots[i].UserID, _ = osubinary.RInt32(r)
 	}
-	l.PlayMode, _ = osubinary.RInt8(r)
-	l.ScoreType, _ = osubinary.RInt8(r)
-	l.FreeMods, _ = osubinary.RInt8(r)
+	l.PlayMode, _ = osubinary.RByte(r)
+	l.ScoreType, _ = osubinary.RByte(r)
+	l.FreeMods, _ = osubinary.RByte(r)
 	if l.FreeMods&constants.Freemod > 0 {
 		for i := 0; i < 15; i++ {
 			l.Slots[i].Mods, _ = osubinary.RUInt32(r)

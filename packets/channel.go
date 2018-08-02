@@ -23,7 +23,7 @@ func (w *Writer) ChannelAvaible() {
 		}
 		p := constants.NewPacket(constants.BanchoChannelAvailable)
 		p.SetPacketData(osubinary.Marshal(objects.CHANNELS[i].CInfo))
-		w.WritePacket(p)
+		w.Write(p)
 	}
 }
 
@@ -43,11 +43,11 @@ func (w *Writer) LeaveChannel(channelname string) {
 func (w *Writer) JoinChannelSuccess(channelname string) {
 	p := constants.NewPacket(constants.BanchoChannelJoinSuccess)
 	p.SetPacketData(osubinary.BString(channelname))
-	w.WritePacket(p)
+	w.Write(p)
 }
 
 func (w *Writer) KickOutOfChannel(channelname string) {
 	p := constants.NewPacket(constants.BanchoChannelRevoked)
 	p.SetPacketData(osubinary.BString(channelname))
-	w.WritePacket(p)
+	w.Write(p)
 }

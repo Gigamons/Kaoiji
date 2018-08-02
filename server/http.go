@@ -95,7 +95,9 @@ func StartServer(port int) {
 	r.Use(errHandler)
 	r.HandleFunc("/", main)
 
-	objects.NewToken(uuid.UUID{}, 0, 0, usertools.GetUser(100))
+	var botID uint32 = 100
+
+	objects.NewToken(uuid.UUID{}, 0, 0, usertools.GetUser(&botID))
 	logger.Infof("Kaoiji is listening on port %v\n", port)
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(port), r))
 }

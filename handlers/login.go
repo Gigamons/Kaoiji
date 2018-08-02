@@ -66,16 +66,16 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		Err(w)
 	}
 	userid := usertools.GetUserID(l.Username)
-	if userid < 1 {
+	if userid == nil {
 		logger.Infoln(l.Username, "Failed to Login!")
-		pw.UserID(constants.LoginFailed)
+		pw.LoginReply(constants.LoginFailed)
 		w.Write(pw.Bytes())
 		return
 	}
 	u := usertools.GetUser(userid)
 	if !u.CheckPassword(l.Password) {
 		logger.Infoln(l.Username, "Failed to Login!")
-		pw.UserID(constants.LoginFailed)
+		pw.LoginReply(constants.LoginFailed)
 		w.Write(pw.Bytes())
 		return
 	}
@@ -113,20 +113,20 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	/* For self */
 	pw.SetToken(t)
 	pw.ProtocolVersion(19)
-	pw.UserID(int32(t.User.ID))
+	pw.LoginReply(int32(t.User.ID))
 	pw.UserPresence(t)
 	pw.SendFriendlist()
 	pw.PresenceBundle()
-	pw.Write(public.SendUserStats(t, true))
+	pw.WriteBuff(public.SendUserStats(t, true))
 	pw.LoginPermissions()
 	pw.AutoJoinChannel()
 	pw.ChannelAvaible()
-	pw.Silence(int32(u.Status.SilencedUntil.Unix() - time.Now().Unix())) // Possible overflow, but WHO CARES ?!?
+	pw.Silence(uint32(u.Status.SilencedUntil.Unix() - time.Now().Unix())) // Possible overflow, but WHO CARES ?!?
 
 	/* For everyone who is in the main stream */
 	pasw := packets.NewWriter(t)
 	pasw.PresenceSingle(t.User.ID)
-	pasw.Write(public.SendUserStats(t, false))
+	pasw.WriteBuff(public.SendUserStats(t, false))
 	main.Broadcast(pasw.Bytes(), nil)
 
 	logger.Infoln(l.Username, "has logged in!")

@@ -71,22 +71,22 @@ func leaveChannel(r io.Reader, t *objects.Token) {
 
 // addFriend adds a Friend ofc!
 func addFriend(r io.Reader, t *objects.Token) {
-	i, err := osubinary.RInt32(r)
+	i, err := osubinary.RUInt32(r)
 	if err != nil {
 		logger.Errorln(err)
 		return
 	}
-	packets.AddFriend(t.User, usertools.GetUser(int(i)))
+	packets.AddFriend(t.User, usertools.GetUser(&i))
 }
 
 // removeFriend removes a Friend ofc!
 func removeFriend(r io.Reader, t *objects.Token) {
-	i, err := osubinary.RInt32(r)
+	i, err := osubinary.RUInt32(r)
 	if err != nil {
 		logger.Errorln(err)
 		return
 	}
-	packets.RemoveFriend(t.User, usertools.GetUser(int(i)))
+	packets.RemoveFriend(t.User, usertools.GetUser(&i))
 }
 
 // updateUserStats updates the User stats for that user, (No fetching out of SQL)
@@ -103,7 +103,7 @@ func updateUserStats(r io.Reader, t *objects.Token) {
 
 // sendUserPresence Send the User Precense of the Given UserID.
 func sendUserPresence(r io.Reader, t *objects.Token) {
-	i, err := osubinary.RIntArray(r)
+	i, err := osubinary.RUIntArray(r)
 	yw := packets.NewWriter(t)
 	if err != nil {
 		logger.Errorln(err)
@@ -126,13 +126,13 @@ func sendMessage(r io.Reader, t *objects.Token) {
 func disconnectUser(t *objects.Token) {
 	main := objects.GetStream("main")
 	pckt := constants.NewPacket(constants.BanchoHandleUserQuit)
-	pckt.SetPacketData(osubinary.Marshal(constants.UserQuitStruct{UserID: t.User.ID, ErrorState: int8(0)}))
+	pckt.SetPacketData(osubinary.Marshal(constants.UserQuitStruct{UserID: t.User.ID, ErrorState: 0}))
 	objects.DeleteToken(t.Token)
 	go main.Broadcast(pckt.ToByteArray(), nil)
 }
 
 func startSpectate(r io.Reader, t *objects.Token) {
-	i, err := osubinary.RInt32(r)
+	i, err := osubinary.RUInt32(r)
 	if err != nil {
 		logger.Errorln(err)
 		return
@@ -201,7 +201,7 @@ func CreateMPLobby(r io.Reader, t *objects.Token) {
 }
 
 func SwitchLobbySlot(r io.Reader, t *objects.Token) {
-	slot, _ := osubinary.RInt8(r)
+	slot, _ := osubinary.RByte(r)
 	t.MPLobby.SwitchSlot(slot, t)
 }
 
@@ -289,7 +289,7 @@ func HandlePackets(b []byte, t *objects.Token) {
 			SwitchLobbySlot(r, t)
 
 		default:
-			logPacket(&pkg)
+			logPacket(pkg)
 
 		}
 	}

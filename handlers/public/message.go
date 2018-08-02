@@ -45,7 +45,7 @@ func SendMessage(t *objects.Token, Message string, Channel string) {
 	}
 	if !strings.HasPrefix(Channel, "#") {
 		targetid := usertools.GetUserID(Channel)
-		targettoken := objects.GetTokenByID(int32(targetid))
+		targettoken := objects.GetTokenByID(*targetid)
 		if targettoken == nil {
 			return
 		}

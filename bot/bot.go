@@ -2,7 +2,10 @@ package bot
 
 import (
 	"encoding/hex"
+	"errors"
 	"fmt"
+	"math/rand"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -21,7 +24,7 @@ import (
 
 type Command struct {
 	CMD  string
-	Prev int32
+	Prev uint64
 	Args []string
 	Pub  bool
 	Func func(*objects.Token, ...string)
@@ -34,22 +37,22 @@ var Commands = []*Command{
 		case "developer":
 			helpers.DB.Exec(sql, consts.AdminBanUsers+consts.AdminBeatmaps+consts.AdminChatMod+consts.AdminDeveloper+consts.AdminKickUsers+consts.AdminManageUsers+consts.AdminPannelAccess+consts.AdminPrivileges+consts.AdminReports+consts.AdminSendAnnouncements+consts.AdminSettings+consts.AdminSilenceUsers+consts.AdminWipeUsers+consts.BAT+consts.Supporter, args[1])
 			message(t, "Successfully gave", args[1], "the rank Developer!")
-			objects.DeleteOldTokens(int32(usertools.GetUserID(args[1])))
+			objects.DeleteOldTokens(*usertools.GetUserID(args[1]))
 
 		case "moderator":
 			helpers.DB.Exec(sql, consts.AdminBanUsers+consts.AdminChatMod+consts.AdminKickUsers+consts.AdminSendAnnouncements+consts.AdminReports+consts.AdminSilenceUsers+consts.AdminWipeUsers, args[1])
 			message(t, "Successfully gave", args[1], "the rank Moderator!")
-			objects.DeleteOldTokens(int32(usertools.GetUserID(args[1])))
+			objects.DeleteOldTokens(*usertools.GetUserID(args[1]))
 
 		case "bat":
 			helpers.DB.Exec(sql, consts.AdminBeatmaps+consts.BAT, args[1])
 			message(t, "Successfully gave", args[1], "the rank BAT!")
-			objects.DeleteOldTokens(int32(usertools.GetUserID(args[1])))
+			objects.DeleteOldTokens(*usertools.GetUserID(args[1]))
 
 		case "supporter":
 			helpers.DB.Exec(sql, consts.Supporter, args[1])
 			message(t, "Successfully gave", args[1], "the rank Supporter!")
-			objects.DeleteOldTokens(int32(usertools.GetUserID(args[1])))
+			objects.DeleteOldTokens(*usertools.GetUserID(args[1]))
 
 		default:
 			message(t, "Unknown Rank!")
@@ -76,6 +79,14 @@ var Commands = []*Command{
 	&Command{"!adduser", consts.AdminDeveloper, []string{"Username", "Password"}, false, func(t *objects.Token, args ...string) {
 		u := args[1]
 		p := args[2]
+		if p == "random" {
+			p = ""
+			run := []rune("abcdefghijklmnopqrstuvwxyz123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+			for i := 0; i < 16; i++ {
+				rand.Seed(time.Now().UnixNano())
+				p += string(run[rand.Intn(len(run))])
+			}
+		}
 		hash, err := helpers.MD5String(p)
 		if err != nil {
 			message(t, "could not create useraccount!", err.Error())
@@ -90,39 +101,36 @@ var Commands = []*Command{
 		helpers.DB.Exec("INSERT INTO users_status () VALUES ()")
 		helpers.DB.Exec("INSERT INTO leaderboard () VALUES ()")
 		helpers.DB.Exec("INSERT INTO leaderboard_rx () VALUES ()")
-		message(t, "Created user with the username of", u, "and the password of", p, hex.EncodeToString(hash), string(phash))
+		message(t, "Created user with the username of", u, "and the password of\nPass:", p, "\nMD5:", hex.EncodeToString(hash), "\nPassHash:", string(phash))
 	}},
 	&Command{"!silence", consts.AdminChatMod, []string{"Username", "date"}, false, func(t *objects.Token, Args ...string) {
 		target := usertools.GetUser(usertools.GetUserID(Args[1]))
-		if target == nil {
+		if target == nil || target.ID == 0 {
 			return
 		}
-		var outms int64 = 0
 		Args = append(Args[:0], Args[2:]...)
-		for _, s := range Args {
-			r := []rune(s)
-			if len(r) < 2 {
-				continue
-			}
-			letter := r[len(r)-1]
-			tim, err := strconv.Atoi(string(r[:len(r)-1]))
-			if err != nil {
-				continue
-			}
+		var outms int64 = 0
+		pim, pum, err := parsetimingstring(Args[0])
+		if err != nil {
+			message(t, err.Error())
+			return
+		}
+		for xz, letter := range pim {
+			tim := pum[xz]
 			switch letter {
-			case 's':
+			case "s":
 				outms += int64(tim)
-			case 'm':
+			case "m":
 				outms += int64(tim) * 60
-			case 'h':
+			case "h":
 				outms += int64(tim) * 60 * 60
-			case 'd':
+			case "d":
 				outms += int64(tim) * 60 * 60 * 24
-			case 'w':
+			case "w":
 				outms += int64(tim) * 60 * 60 * 24 * 7
-			case 'M':
+			case "mo":
 				outms += int64(tim) * 60 * 60 * 24 * 31
-			case 'y':
+			case "y":
 				outms += int64(tim)*60*60*24*31*12 - 60*60*24*7
 			default:
 				message(t, "Unknown format", strconv.Itoa(tim), string(letter))
@@ -130,14 +138,17 @@ var Commands = []*Command{
 		}
 		x := time.Unix(outms+time.Now().Unix(), 0)
 		helpers.DB.Exec("UPDATE users_status SET silenced_until=? WHERE id=?", x, target.ID)
+		helpers.DB.Exec("UPDATE users_status SET silenced_reason=? WHERE id=?", strings.Join(Args[1:], " "), target.ID)
 
+		message(t, "Silenced", target.UserName, "for", strconv.Itoa(int(outms)), "second(s)!")
 		targetToken := objects.GetTokenByID(target.ID)
 		if targetToken == nil {
 			return
 		}
-		Silence(targetToken, int32(outms)) // ppfff overflow but WHO CARES ?!?
-		t.User = usertools.GetUser(int(target.ID))
-		t.Leaderboard = usertools.GetLeaderboard(t.User, int8(t.Status.Beatmap.PlayMode))
+		message(targetToken, "You've got silence due this reason:", strings.Join(Args[1:], " "))
+		silence(targetToken, int32(outms)) // ppfff overflow but WHO CARES ?!?
+		t.User = usertools.GetUser(&target.ID)
+		t.Leaderboard = usertools.GetLeaderboard(t.User, t.Status.Beatmap.PlayMode)
 	}},
 	&Command{"!unsilence", consts.AdminChatMod, []string{"Username"}, false, func(t *objects.Token, Args ...string) {
 		target := usertools.GetUser(usertools.GetUserID(Args[1]))
@@ -145,13 +156,43 @@ var Commands = []*Command{
 			return
 		}
 		helpers.DB.Exec("UPDATE users_status SET silenced_until=? WHERE id=?", time.Now(), target.ID)
+		message(t, "Unsilenced", target.UserName)
 		targetToken := objects.GetTokenByID(target.ID)
 		if targetToken == nil {
 			return
 		}
-		Silence(targetToken, int32(0)) // ppfff overflow but WHO CARES ?!?
-		t.User = usertools.GetUser(int(target.ID))
-		t.Leaderboard = usertools.GetLeaderboard(t.User, int8(t.Status.Beatmap.PlayMode))
+		silence(targetToken, int32(0)) // ppfff overflow but WHO CARES ?!?
+		t.User = usertools.GetUser(&target.ID)
+		t.Leaderboard = usertools.GetLeaderboard(t.User, t.Status.Beatmap.PlayMode)
+	}},
+	&Command{"!rtx", consts.AdminDeveloper, []string{"Username", "...reason"}, false, func(t *objects.Token, Args ...string) {
+		target := usertools.GetUser(usertools.GetUserID(Args[1]))
+		if target == nil || target.ID == 0 {
+			return
+		}
+		targetToken := objects.GetTokenByID(target.ID)
+		if targetToken == nil {
+			return
+		}
+		Reason := strings.Join(append(Args[:0], Args[2:]...), " ")
+		p := constants.NewPacket(constants.BanchoRTX)
+		p.SetPacketData(osubinary.BString(Reason))
+		targetToken.Write(p.ToByteArray())
+	}},
+	&Command{"!kill", consts.AdminDeveloper, []string{"Username"}, false, func(t *objects.Token, Args ...string) {
+		target := usertools.GetUser(usertools.GetUserID(Args[1]))
+		if target == nil || target.ID == 0 {
+			return
+		}
+		targetToken := objects.GetTokenByID(target.ID)
+		if targetToken == nil {
+			return
+		}
+		p := constants.NewPacket(constants.BanchoLoginPermissions)
+		p.SetPacketData(osubinary.Int32(int32(constants.BAT)))
+		targetToken.Write(p.ToByteArray())
+		p = constants.NewPacket(constants.BanchoPing)
+		targetToken.Write(p.ToByteArray())
 	}},
 }
 
@@ -159,7 +200,7 @@ func init() {
 	Commands = append(Commands, &Command{"!help", 0, []string{}, false, func(t *objects.Token, args ...string) {
 		z := ""
 		for i := 0; i < len(Commands); i++ {
-			if helpers.HasPrivileges(int(Commands[i].Prev), t.User) {
+			if helpers.HasPrivileges(Commands[i].Prev, t.User) {
 				z += "Command: " + Commands[i].CMD + x(SToIN(Commands[i].Args...)...) + "\n"
 			}
 		}
@@ -200,13 +241,38 @@ func message(t *objects.Token, msg ...string) {
 	t.Write(p.ToByteArray())
 }
 
-func deletemessages(userid int32) []byte {
+func parsetimingstring(s string) ([]string, []int, error) {
+	timingrgx := regexp.MustCompile(`(\d+[smhdy][mo]?)`)
+	rgx := regexp.MustCompile(`([smhdy][mo]?)`)
+	if timingrgx == nil || rgx == nil {
+		return nil, nil, errors.New("Could not parse timing")
+	}
+	var x []int
+	orx := rgx.Split(strings.Join(timingrgx.FindAllString(s, -1), ""), -1)
+	srx := rgx.FindAllString(strings.Join(timingrgx.FindAllString(s, -1), ""), -1)
+	for i := 0; i < len(orx); i++ {
+		if orx[i] == "" {
+			break
+		}
+		y, err := strconv.Atoi(orx[i])
+		if err != nil {
+			return nil, nil, err
+		}
+		x = append(x, y)
+	}
+	if len(srx) != len(x) {
+		return nil, nil, errors.New("Could not parse timing")
+	}
+	return srx, x, nil
+}
+
+func deletemessages(userid uint32) []byte {
 	p := constants.NewPacket(constants.BanchoUserSilenced)
-	p.SetPacketData(osubinary.Int32(userid))
+	p.SetPacketData(osubinary.UInt32(userid))
 	return p.ToByteArray()
 }
 
-func Silence(t *objects.Token, timeout int32) {
+func silence(t *objects.Token, timeout int32) {
 	if timeout < 0 {
 		timeout = 0
 	}

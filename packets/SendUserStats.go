@@ -6,8 +6,8 @@ import (
 )
 
 // SendUserStats sends the UserStatus to the writer.
-func (w *Writer) SendUserStats(x constants.UserStatsStruct) {
+func (w *Writer) SendUserStats(x *constants.UserStatsStruct) {
 	p := constants.NewPacket(constants.BanchoHandleOsuUpdate)
 	p.SetPacketData(osubinary.Marshal(x))
-	w.WritePacket(p)
+	w.Write(p)
 }

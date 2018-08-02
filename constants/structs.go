@@ -13,22 +13,22 @@ type BeatmapInfo struct {
 	BeatmapID        uint32
 	BeatmapSetID     uint32
 	ForumThreadID    uint32
-	RankedStatus     int8
-	OsuLetter        int8
-	CTBLetter        int8
-	TaikoLetter      int8
-	ManiaLetter      int8
+	RankedStatus     byte
+	OsuLetter        byte
+	CTBLetter        byte
+	TaikoLetter      byte
+	ManiaLetter      byte
 	BeatmapChecksumm string
 }
 
 // ClientSendUserStatusStruct for user status
 type ClientSendUserStatusStruct struct {
-	Status          int8
+	Status          byte
 	StatusText      string
 	BeatmapChecksum string
 	CurrentMods     uint32
-	PlayMode        uint8
-	BeatmapID       int32
+	PlayMode        byte
+	BeatmapID       uint32
 }
 
 // Config is for the config.yml file
@@ -56,59 +56,59 @@ type MessageStruct struct {
 	Username string
 	Message  string
 	Target   string
-	UserID   int32
+	UserID   uint32
 }
 
 // UserPresenceStruct for User presences
 type UserPresenceStruct struct {
-	UserID      int32
+	UserID      uint32
 	Username    string
-	Timezone    int8
-	CountryID   int8
-	Permissions int8
+	Timezone    byte
+	CountryID   byte
+	Permissions byte
 	Lon         float64
 	Lat         float64
-	Rank        int32
+	Rank        uint32
 }
 
 // UserQuitStruct if a user quits/timeout
 type UserQuitStruct struct {
-	UserID     int32
-	ErrorState int8
+	UserID     uint32
+	ErrorState byte
 }
 
 // UserStatsStruct Stats ofc.
 type UserStatsStruct struct {
-	UserID          int32
-	Status          int8
+	UserID          uint32
+	Status          byte
 	StatusText      string
 	BeatmapChecksum string
 	CurrentMods     uint32
-	PlayMode        int8
-	BeatmapID       int32
+	PlayMode        byte
+	BeatmapID       uint32
 	RankedScore     uint64
 	Accuracy        float32
-	PlayCount       int32
+	PlayCount       uint32
 	TotalScore      uint64
-	Rank            int32
-	PeppyPoints     int16
+	Rank            uint32
+	PeppyPoints     uint16
 }
 
 // Packet struct is simply a packet
 type Packet struct {
-	PacketID     int16
-	PacketLength int32
+	PacketID     uint16
+	PacketLength uint32
 	PacketData   []byte
 }
 
 // NewPacket Create a new Packet
 func NewPacket(packetid int) *Packet {
-	return &Packet{int16(packetid), 0, nil}
+	return &Packet{uint16(packetid), 0, nil}
 }
 
 // SetPacketData set's the Packet data
 func (p *Packet) SetPacketData(PacketData []byte) {
-	p.PacketLength = int32(len(PacketData))
+	p.PacketLength = uint32(len(PacketData))
 	p.PacketData = PacketData
 }
 

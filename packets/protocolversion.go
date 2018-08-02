@@ -6,8 +6,8 @@ import (
 )
 
 // ProtocolVersion current ProtocolVersion
-func (w *Writer) ProtocolVersion(i int32) {
+func (w *Writer) ProtocolVersion(i uint32) {
 	p := constants.NewPacket(constants.BanchoProtocolNegotiation)
-	p.SetPacketData(osubinary.Int32(i))
-	w.WritePacket(p)
+	p.SetPacketData(osubinary.UInt32(i))
+	w.Write(p)
 }

@@ -7,11 +7,11 @@ import (
 )
 
 func (w *Writer) PresenceBundle() {
-	var t []int32
+	var t []uint32
 	for i := 0; i < len(objects.TOKENS); i++ {
 		t = append(t, objects.TOKENS[i].User.ID)
 	}
 	p := constants.NewPacket(constants.BanchoUserPresenceBundle)
-	p.SetPacketData(osubinary.IntArray(t))
-	w.WritePacket(p)
+	p.SetPacketData(osubinary.UIntArray(t))
+	w.Write(p)
 }

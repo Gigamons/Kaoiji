@@ -24,17 +24,17 @@ func SendUserStats(t *objects.Token, forced bool) []byte {
 	x.StatusText = t.Status.Beatmap.StatusText
 	x.BeatmapChecksum = t.Status.Beatmap.BeatmapChecksum
 	x.CurrentMods = t.Status.Beatmap.CurrentMods
-	x.PlayMode = int8(t.Status.Beatmap.PlayMode)
+	x.PlayMode = t.Status.Beatmap.PlayMode
 	x.BeatmapID = t.Status.Beatmap.BeatmapID
 	if t.Leaderboard == nil {
 		return SendUserStats(t, true)
 	}
 	x.RankedScore = uint64(t.Leaderboard.RankedScore)
 	x.Accuracy = float32(helpers.CalculateAccuracy(t.Leaderboard.Count300, t.Leaderboard.Count100, t.Leaderboard.Count50, t.Leaderboard.CountMiss, 0, 0, 0))
-	x.PlayCount = int32(t.Leaderboard.Playcount)
+	x.PlayCount = t.Leaderboard.Playcount
 	x.TotalScore = uint64(t.Leaderboard.TotalScore)
-	x.Rank = usertools.GetLeaderboardPosition(t.User, int8(t.Status.Beatmap.PlayMode))
-	x.PeppyPoints = int16(t.Leaderboard.PeppyPoints)
-	w.SendUserStats(x)
+	x.Rank = usertools.GetLeaderboardPosition(t.User, t.Status.Beatmap.PlayMode)
+	x.PeppyPoints = uint16(t.Leaderboard.PeppyPoints)
+	w.SendUserStats(&x)
 	return w.Bytes()
 }

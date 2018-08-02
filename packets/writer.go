@@ -13,20 +13,20 @@ type Writer struct {
 	_token  *objects.Token
 }
 
-func NewWriter(t *objects.Token) Writer {
-	return Writer{_token: t}
+func NewWriter(t *objects.Token) *Writer {
+	return &Writer{_token: t}
 }
 
 func (w *Writer) SetToken(t *objects.Token) {
 	w._token = t
 }
 
-func (w *Writer) Write(b []byte) {
-	w._buffer.Write(b)
+func (w *Writer) Write(b *constants.Packet) {
+	w._buffer.Write(b.ToByteArray())
 }
 
-func (w *Writer) WritePacket(b *constants.Packet) {
-	w._buffer.Write(b.ToByteArray())
+func (w *Writer) WriteBuff(b []byte) {
+	w._buffer.Write(b)
 }
 
 // ToByteArray returns a ByteArray

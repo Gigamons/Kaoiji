@@ -9,12 +9,12 @@ import (
 )
 
 // GetPackets get a packet
-func GetPackets(pkg []byte) []constants.Packet {
-	packetList := []constants.Packet{}
+func GetPackets(pkg []byte) []*constants.Packet {
+	var packetList []*constants.Packet
 	b := bytes.NewReader(pkg)
 
 	for {
-		PacketID, err := osubinary.RInt16(b)
+		PacketID, err := osubinary.RUInt16(b)
 		if err != nil {
 			break
 		}
@@ -22,7 +22,7 @@ func GetPackets(pkg []byte) []constants.Packet {
 		if err != nil {
 			break
 		}
-		PacketLength, err := osubinary.RInt32(b)
+		PacketLength, err := osubinary.RUInt32(b)
 		if err != nil {
 			break
 		}
@@ -32,7 +32,7 @@ func GetPackets(pkg []byte) []constants.Packet {
 			logger.Errorln("Unexpected Packet length! maybe invalid packet?")
 			continue
 		}
-		packetList = append(packetList, constants.Packet{PacketID, PacketLength, PacketData})
+		packetList = append(packetList, &constants.Packet{PacketID, PacketLength, PacketData})
 	}
 
 	return packetList

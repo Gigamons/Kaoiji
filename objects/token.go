@@ -24,20 +24,20 @@ type Token struct {
 		Torney  bool
 		Beatmap constants.ClientSendUserStatusStruct
 		Info    struct {
-			Permissions int8
-			ClientPerm  int8
-			TimeZone    int8
-			CountryID   uint8
+			Permissions byte
+			ClientPerm  byte
+			TimeZone    byte
+			CountryID   byte
 			Lon         float64
 			Lat         float64
-			Rank        int32
+			Rank        uint32
 		}
 	}
 	AlreadyNotified bool
 	SpectatorStream *SpectatorStream
 	Leaderboard     *consts.Leaderboard
 	MPLobby         *Lobby
-	MPSlot          int8
+	MPSlot          uint8
 	LastPing        time.Time
 	Output          bytes.Buffer
 	LockPackets     *sync.Mutex
@@ -111,7 +111,7 @@ func DeleteToken(token string) {
 	lockAppend.Unlock()
 }
 
-func DeleteOldTokens(userid int32) {
+func DeleteOldTokens(userid uint32) {
 	lockAppend.Lock()
 	for i := 0; i < len(TOKENS); i++ {
 		if TOKENS[i].User.ID == userid {
@@ -172,7 +172,7 @@ func GetToken(token string) *Token {
 }
 
 // GetTokenByID Returns a UserToken from an UserID if not exists return nil
-func GetTokenByID(userid int32) *Token {
+func GetTokenByID(userid uint32) *Token {
 	for i := 0; i < len(TOKENS); i++ {
 		if TOKENS[i].User.ID == userid {
 			return TOKENS[i]

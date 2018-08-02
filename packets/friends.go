@@ -12,8 +12,8 @@ import (
 func (w *Writer) SendFriendlist() {
 	flist := usertools.GetFriends(w._token.User)
 	p := constants.NewPacket(constants.BanchoFriendsList)
-	p.SetPacketData(osubinary.IntArray(flist))
-	w.WritePacket(p)
+	p.SetPacketData(osubinary.UIntArray(flist))
+	w.Write(p)
 }
 
 func AddFriend(u *consts.User, f *consts.User) bool {
@@ -32,11 +32,9 @@ func AddFriend(u *consts.User, f *consts.User) bool {
 
 func RemoveFriend(u *consts.User, f *consts.User) bool {
 	db := helpers.DB
-
 	if u == nil || f == nil {
 		return false
 	}
-
 	_, err := db.Exec("DELETE FROM friends WHERE userid = ? AND friendid = ?", u.ID, f.ID)
 	if err != nil {
 		logger.Errorln(err)
