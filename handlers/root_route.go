@@ -1,15 +1,13 @@
 package handlers
 
 import (
-	"cyanidee/bancho-go/helpers"
 	"fmt"
 	"net/http"
 	"time"
 )
 
 func handleGet(response http.ResponseWriter, request *http.Request) {
-	fmt.Println(helpers.GetArrayBytes([]int32{1, 2, 3, 4, 5}))
-	fmt.Fprintf(response, "GET: %s", "hi")
+	fmt.Fprintf(response, "GET: %s", time.Now())
 }
 
 func handlePost(response http.ResponseWriter, request *http.Request) {
