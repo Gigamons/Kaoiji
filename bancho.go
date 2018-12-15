@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 
-	"cyanidee/bancho-go/handlers"
+	"github.com/cyanidee/bancho-go/handlers"
 )
 
 func main() {
