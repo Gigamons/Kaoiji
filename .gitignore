@@ -1,0 +1,11 @@
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+*.text
+*.out
+
+/vendor/
+/Godeps/
