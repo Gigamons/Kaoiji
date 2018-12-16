@@ -3,6 +3,8 @@ package helpers
 import (
 	"fmt"
 	"database/sql"
+	"log"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -10,7 +12,16 @@ import (
 var DBConn *sql.DB
 
 func AntiTimeout() {
+	for {
+		if DBConn == nil {
+			break
+		} else if err := DBConn.Ping(); err != nil {
+			log.Fatal(err)
+			break
+		}
 
+		time.Sleep(time.Second * 30)
+	}
 }
 
 func ConnectMySQL(hostname string, port uint16,
@@ -21,5 +32,5 @@ func ConnectMySQL(hostname string, port uint16,
 
 	DBConn = db
 	go AntiTimeout()
-	return
+	return // returns db and err.
 }
