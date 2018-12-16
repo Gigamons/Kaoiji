@@ -1,8 +1,8 @@
 package helpers
 
 import (
-	"fmt"
 	"database/sql"
+	"fmt"
 	"log"
 	"time"
 
