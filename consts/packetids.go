@@ -7,7 +7,7 @@ const (
 	ClientSendUserStatus             PacketId = iota
 	ClientSendIrcMessage
 	ClientExit
-	ClientRequestStatusUpdate        
+	ClientRequestStatusUpdate
 	ClientPong
 	ServerLoginReply
 	ServerCommandError
