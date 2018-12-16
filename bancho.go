@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/cyanidee/bancho-go/helpers"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/cyanidee/bancho-go/handlers"
+	"github.com/cyanidee/bancho-go/helpers"
 )
 
 func init() {
@@ -41,5 +41,5 @@ func main() {
 	}
 
 	http.HandleFunc("/", handlers.Handle)
-	log.Fatal(http.ListenAndServe(":80", nil))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%d", conf.Server.Hostname, conf.Server.Port), nil))
 }

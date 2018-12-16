@@ -11,7 +11,13 @@ func handleGet(response http.ResponseWriter, request *http.Request) {
 }
 
 func handlePost(response http.ResponseWriter, request *http.Request) {
-	fmt.Fprintf(response, "POST: %s", time.Now())
+	// fmt.Fprintf(response, "POST: %s", time.Now())
+
+	if request.Header.Get("osu-token") == "" &&
+		request.UserAgent() == "osu!"{
+		login_request(response, request)
+	}
+
 }
 
 // Handle handles the request fuck off VSCode
