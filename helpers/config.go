@@ -19,6 +19,8 @@ type Config struct {
 	MySQL DatabaseConfig
 }
 
+var GlobalConfig *Config
+
 func WriteConfig(conf *Config) (err error) {
 	f, err := os.Create("settings.toml")
 	if err != nil {
@@ -26,16 +28,19 @@ func WriteConfig(conf *Config) (err error) {
 	}
 	defer f.Close()
 
-	return toml.NewEncoder(f).Encode(conf)
+	encoder := toml.NewEncoder(f)
+	encoder.Indent = ""
+	return encoder.Encode(conf)
 }
 
-func ReadConfig() (err error, conf Config) {
+func ReadConfig() (err error, conf Config, created bool) {
 	if _, err := toml.DecodeFile("settings.toml", &conf); err != nil {
 		conf.MySQL.Hostname = "localhost"
 		conf.MySQL.Port = 3306
 		conf.MySQL.Username = "root"
 
 		err = WriteConfig(&conf)
+		created = true
 	}
 
 	return
