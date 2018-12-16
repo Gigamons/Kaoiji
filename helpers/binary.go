@@ -21,8 +21,10 @@ func GetBytes(value interface{}, params ...bool) []byte {
 		binary.Write(writer, binary.LittleEndian, value.(uint32))
 	case int32:
 		binary.Write(writer, binary.LittleEndian, value.(int32))
+	case uint: // uint is always 64 bit.
 	case uint64:
 		binary.Write(writer, binary.LittleEndian, value.(uint64))
+	case int: // int is always 64 bit.
 	case int64:
 		binary.Write(writer, binary.LittleEndian, value.(int64))
 	case float32:

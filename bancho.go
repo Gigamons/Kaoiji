@@ -2,12 +2,11 @@ package main
 
 import (
 	"fmt"
+	"github.com/cyanidee/bancho-go/handlers"
+	"github.com/cyanidee/bancho-go/helpers"
 	"log"
 	"net/http"
 	"os"
-
-	"github.com/cyanidee/bancho-go/handlers"
-	"github.com/cyanidee/bancho-go/helpers"
 )
 
 func init() {
@@ -35,6 +34,8 @@ func main() {
 									  conf.MySQL.Database); err != nil {
 		log.Fatalln(err)
 	}
+
+	defer helpers.DBConn.Close()
 
 	if err = helpers.DBConn.Ping(); err != nil {
 		log.Fatalln(err)
