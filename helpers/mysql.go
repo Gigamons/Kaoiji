@@ -16,7 +16,7 @@ func AntiTimeout() {
 		if DBConn == nil {
 			break
 		} else if err := DBConn.Ping(); err != nil {
-			log.Fatal(err)
+			log.Fatalln(err)
 			break
 		}
 
