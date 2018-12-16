@@ -15,7 +15,13 @@ type DatabaseConfig struct {
 	Database string
 }
 
+type ServerConfig struct {
+	Hostname string
+	Port uint16
+}
+
 type Config struct {
+	Server ServerConfig
 	MySQL DatabaseConfig
 }
 
@@ -38,6 +44,9 @@ func ReadConfig() (err error, conf Config, created bool) {
 		conf.MySQL.Hostname = "localhost"
 		conf.MySQL.Port = 3306
 		conf.MySQL.Username = "root"
+
+		conf.Server.Hostname = "localhost"
+		conf.Server.Port = 45471
 
 		err = WriteConfig(&conf)
 		created = true
