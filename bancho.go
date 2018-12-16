@@ -41,6 +41,7 @@ func main() {
 		log.Fatalln(err)
 	}
 
+	fmt.Println(fmt.Sprintf("Server should be listening at port %d", conf.Server.Port))
 	http.HandleFunc("/", handlers.Handle)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%d", conf.Server.Hostname, conf.Server.Port), nil))
 }

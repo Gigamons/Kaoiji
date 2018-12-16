@@ -2,6 +2,7 @@ package packets
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 )
 
@@ -17,7 +18,11 @@ func (pw *PacketWriter) GetBytes() []byte {
 	buffer := new(bytes.Buffer)
 
 	for _, packet := range pw.packetList {
-		_ = packet.WriteBytes(buffer) // teehee, ignoring the error. i'm bad ass
+		err := packet.WriteBytes(buffer)
+		if err != nil {
+			fmt.Println(err)
+			return nil
+		}
 	}
 
 	return buffer.Bytes()
