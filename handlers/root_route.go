@@ -2,34 +2,39 @@ package handlers
 
 import (
 	"fmt"
-	"net/http"
+	"github.com/valyala/fasthttp"
 	"time"
 )
 
-func handleGet(response http.ResponseWriter, request *http.Request) {
-	fmt.Fprintf(response, "GET: %s", time.Now())
+func handleGet(ctx *fasthttp.RequestCtx) {
+	fmt.Fprintf(ctx, "GET: %s", time.Now())
 }
 
-func handlePost(response http.ResponseWriter, request *http.Request) {
-	// fmt.Fprintf(response, "POST: %s", time.Now())
+func handlePost(ctx *fasthttp.RequestCtx) {
+	ctx.Response.Header.Set("cho-protocol", "19")
+	ctx.Response.Header.Set("Connection", "keep-alive")
+	ctx.Response.Header.Set("Keep-Alive", "timeout=5, max=100")
+	ctx.Response.Header.Set("Content-Type", "application/octet-stream; charset=UTF-8")
 
-	fmt.Println(request.Header.Get("osu-token"))
-	fmt.Println(request.UserAgent())
-	if request.Header.Get("osu-token") == "" &&
-		request.UserAgent() == "osu!"{
-		login_request(response, request)
+	if string(ctx.UserAgent()) != "osu!" {
+		handleGet(ctx) // it's not osu! we wont handle that. (as for now)
+		return
+	}
+
+	if string(ctx.Request.Header.Peek("osu-token")) == "" {
+		login_request(ctx)
+		return
 	}
 
 }
 
-// Handle handles the request fuck off VSCode
-func Handle(response http.ResponseWriter, request *http.Request) {
-	switch request.Method {
-	case http.MethodGet:
-		handleGet(response, request)
+// HandleRoot handles the request fuck off VSCode
+func HandleRoot(ctx *fasthttp.RequestCtx) {
+	switch string(ctx.Method()) {
+	case "GET":
+		handleGet(ctx)
 
-	case http.MethodPost:
-		handlePost(response, request)
-
+	case "POST":
+		handlePost(ctx)
 	}
 }

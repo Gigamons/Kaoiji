@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/cyanidee/bancho-go/handlers"
 	"github.com/cyanidee/bancho-go/helpers"
+	"github.com/valyala/fasthttp"
 	"log"
-	"net/http"
 	"os"
 )
 
@@ -20,6 +20,15 @@ func init() {
 		os.Exit(0)
 	}
 }
+
+
+func RunHTTPServer(ctx *fasthttp.RequestCtx) {
+	switch string(ctx.Path()) {
+	case "/":
+		handlers.HandleRoot(ctx)
+	}
+}
+
 
 func main() {
 	err, conf, _ := helpers.ReadConfig()
@@ -42,6 +51,5 @@ func main() {
 	}
 
 	fmt.Println(fmt.Sprintf("Server should be listening at port %d", conf.Server.Port))
-	http.HandleFunc("/", handlers.Handle)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%d", conf.Server.Hostname, conf.Server.Port), nil))
+	log.Fatalln(fasthttp.ListenAndServe(fmt.Sprintf("%s:%d", conf.Server.Hostname, conf.Server.Port), RunHTTPServer))
 }
