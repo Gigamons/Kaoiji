@@ -45,3 +45,15 @@ func (pw *PacketWriter) ChannelAvailable(channelName string, channelTopic string
 
 	pw.WritePacket(p)
 }
+
+func (pw *PacketWriter) SendMessage(userName string, message string, target string, senderId int32) {
+	p := new(Packet)
+	p.PacketId = consts.ServerSendMessage
+
+	p.WriteData(helpers.GetBytes(userName, true))
+	p.WriteData(helpers.GetBytes(message, true))
+	p.WriteData(helpers.GetBytes(target, true))
+	p.WriteData(helpers.GetBytes(senderId))
+
+	pw.WritePacket(p)
+}
