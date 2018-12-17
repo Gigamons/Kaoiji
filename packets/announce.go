@@ -1,8 +1,8 @@
 package packets
 
 import (
-	"github.com/cyanidee/bancho-go/consts"
-	"github.com/cyanidee/bancho-go/helpers"
+	"github.com/Gigamons/Kaoiji/consts"
+	"github.com/Gigamons/Kaoiji/helpers"
 )
 
 func (pw *PacketWriter) Announce(message string) {

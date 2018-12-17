@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"fmt"
-	"github.com/cyanidee/bancho-go/packets"
+	"github.com/Gigamons/Kaoiji/packets"
 	"github.com/valyala/fasthttp"
 )
 

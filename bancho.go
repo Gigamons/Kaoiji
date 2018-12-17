@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/cyanidee/bancho-go/handlers"
-	"github.com/cyanidee/bancho-go/helpers"
+	"github.com/Gigamons/Kaoiji/handlers"
+	"github.com/Gigamons/Kaoiji/helpers"
 	"github.com/valyala/fasthttp"
 	"log"
 	"os"
