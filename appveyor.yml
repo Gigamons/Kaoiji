@@ -1,0 +1,28 @@
+image: ubuntu
+version: "b{build}"
+build: off
+pull_requests:
+  do_not_increment_build_number: true
+clone_depth: 50
+stack: go 1.10, mysql, redis
+
+init:
+  - git config --global core.autocrlf input
+
+install:
+  - go get -d -v -u github.com/Gigamons/Kaoiji
+  - cd $GOPATH/src
+  - go get -d ./...
+
+test_script:
+  - go build -v $GOPATH/src/github.com/Gigamons/Kaoiji/kaoiji.go
+
+on_success:
+  - sh: cd $GOPATH/src/github.com/Gigamons/Kaoiji
+  - sh: curl https://git.io/goreleaser | bash -
+  - ps: Invoke-RestMethod https://raw.githubusercontent.com/k3rn31p4nic/appveyor-discord-webhook/master/send.ps1 -o send.ps1
+  - ps: ./send.ps1 success $env:WEBHOOK_URL
+
+on_failure:
+  - ps: Invoke-RestMethod https://raw.githubusercontent.com/k3rn31p4nic/appveyor-discord-webhook/master/send.ps1 -o send.ps1
+  - ps: ./send.ps1 failure $env:WEBHOOK_URL
