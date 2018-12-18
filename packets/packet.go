@@ -3,7 +3,7 @@ package packets
 import (
 	"bytes"
 	"github.com/Gigamons/Kaoiji/consts"
-	"github.com/Gigamons/Kaoiji/helpers"
+	"github.com/Gigamons/Shared/shelpers"
 	"io"
 )
 
@@ -19,25 +19,25 @@ func (p *Packet) WriteData(data []byte) {
 func (p *Packet) GetBytes() []byte {
 	buffer := new(bytes.Buffer)
 
-	buffer.Write(helpers.GetBytes(uint16(p.PacketId)))
-	buffer.Write(helpers.GetBytes(uint8(0)))
-	buffer.Write(helpers.GetBytes(int32(p.buffer.Len())))
+	buffer.Write(shelpers.GetBytes(uint16(p.PacketId)))
+	buffer.Write(shelpers.GetBytes(uint8(0)))
+	buffer.Write(shelpers.GetBytes(int32(p.buffer.Len())))
 	buffer.Write(p.buffer.Bytes())
 
 	return buffer.Bytes()
 }
 
 func (p *Packet) WriteBytes(w io.Writer) (err error) {
-	if _, err = w.Write(helpers.GetBytes(uint16(p.PacketId))); err != nil {
+	if err = shelpers.WriteBytes(w, uint16(p.PacketId)); err != nil {
 		return
 	}
-	if _, err = w.Write(helpers.GetBytes(uint8(0))); err != nil {
+	if err = shelpers.WriteBytes(w, uint8(0)); err != nil {
 		return
 	}
-	if _, err = w.Write(helpers.GetBytes(int32(p.buffer.Len()))); err != nil {
+	if err = shelpers.WriteBytes(w, int32(p.buffer.Len())); err != nil {
 		return
 	}
-	if _, err = w.Write(p.buffer.Bytes()); err != nil {
+	if err = shelpers.WriteBytes(w, p.buffer.Bytes()); err != nil {
 		return
 	}
 

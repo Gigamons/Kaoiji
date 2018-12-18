@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/Gigamons/Kaoiji/handlers"
 	"github.com/Gigamons/Kaoiji/helpers"
+	"github.com/Gigamons/Shared/shelpers"
 	"github.com/valyala/fasthttp"
 	"log"
 	"os"
@@ -38,15 +39,15 @@ func main() {
 
 	helpers.GlobalConfig = &conf
 
-	if _, err := helpers.ConnectMySQL(conf.MySQL.Hostname, conf.MySQL.Port,
+	if _, err := shelpers.ConnectMySQL(conf.MySQL.Hostname, conf.MySQL.Port,
 									  conf.MySQL.Username, conf.MySQL.Password,
 									  conf.MySQL.Database); err != nil {
 		log.Fatalln(err)
 	}
 
-	defer helpers.DBConn.Close()
+	defer shelpers.DBConn.Close()
 
-	if err = helpers.DBConn.Ping(); err != nil {
+	if err = shelpers.DBConn.Ping(); err != nil {
 		log.Fatalln(err)
 	}
 

@@ -2,14 +2,14 @@ package packets
 
 import (
 	"github.com/Gigamons/Kaoiji/consts"
-	"github.com/Gigamons/Kaoiji/helpers"
+	"github.com/Gigamons/Shared/shelpers"
 )
 
 func (pw *PacketWriter) Announce(message string) {
 	p := new(Packet)
 	p.PacketId = consts.ServerAnnounce
 
-	helpers.WriteBytes(&p.buffer, message, true)
+	shelpers.WriteBytes(&p.buffer, message, true)
 
 	pw.WritePacket(p)
 }
