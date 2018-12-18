@@ -1,7 +1,6 @@
 package objects
 
 import (
-	"fmt"
 	"github.com/google/uuid"
 	"sync"
 )
@@ -10,19 +9,17 @@ var presences []Presence
 var mutPresence = sync.Mutex{}
 
 type Presence struct {
-	token string
-
+	Token string
 }
 
-func NewUserPresence() *Presence {
+func NewPresence() Presence {
 	pr := Presence{}
-	n, err := uuid.NewRandom()
-	if err != nil {
-		fmt.Println(err)
-		return nil
-	}
-	pr.token = n.String()
+	n, _ := uuid.NewRandom()
+	pr.Token = n.String()
+	return pr
+}
 
+func AppendPresence(pr Presence) *Presence {
 	mutPresence.Lock()
 	presences = append(presences, pr)
 	index := len(presences)
