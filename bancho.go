@@ -43,16 +43,20 @@ func main() {
 
 	helpers.GlobalConfig = &conf
 
-	if _, err := shelpers.ConnectMySQL(conf.MySQL.Hostname, conf.MySQL.Port,
+	if db, err := shelpers.ConnectMySQL(conf.MySQL.Hostname, conf.MySQL.Port,
 									  conf.MySQL.Username, conf.MySQL.Password,
 									  conf.MySQL.Database); err != nil {
 		log.Fatalln(err)
-	}
-
-	defer shelpers.DBConn.Close()
-
-	if err = shelpers.DBConn.Ping(); err != nil {
-		log.Fatalln(err)
+		return
+	} else if db != nil {
+		if err = db.Ping(); err != nil {
+			log.Fatalln(err)
+			return
+		}
+		defer db.Close()
+	} else {
+		log.Fatalln("DB is null!")
+		return
 	}
 
 	fmt.Println(fmt.Sprintf("Server should be listening at port %d", conf.Server.Port))
