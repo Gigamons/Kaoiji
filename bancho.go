@@ -37,6 +37,10 @@ func main() {
 		log.Fatalln(err)
 	}
 
+	shelpers.SECRET = conf.Security.Secret
+	shelpers.SECRET_SEED = conf.Security.SecretSeed
+	shelpers.SYN = conf.Security.Syntax
+
 	helpers.GlobalConfig = &conf
 
 	if _, err := shelpers.ConnectMySQL(conf.MySQL.Hostname, conf.MySQL.Port,
