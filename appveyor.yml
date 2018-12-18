@@ -12,7 +12,7 @@ init:
 install:
   - go get -d -v -u github.com/Gigamons/Kaoiji
   - cd $GOPATH/src
-  - go get -d ./...
+  #- go get -d -v ./...
 
 test_script:
   - go build -v $GOPATH/src/github.com/Gigamons/Kaoiji/bancho.go
