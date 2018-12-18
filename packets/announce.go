@@ -9,7 +9,7 @@ func (pw *PacketWriter) Announce(message string) {
 	p := new(Packet)
 	p.PacketId = consts.ServerAnnounce
 
-	p.WriteData(helpers.GetBytes(message, true))
+	helpers.WriteBytes(&p.buffer, message, true)
 
 	pw.WritePacket(p)
 }

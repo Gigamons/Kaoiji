@@ -9,7 +9,7 @@ func (pw *PacketWriter) ChannelJoinSuccess(channel string) {
 	p := new(Packet)
 	p.PacketId = consts.ServerChannelJoinSuccess
 
-	p.WriteData(helpers.GetBytes(channel, true))
+	helpers.WriteBytes(&p.buffer, channel, true)
 
 	pw.WritePacket(p)
 }
@@ -18,7 +18,7 @@ func (pw *PacketWriter) ChannelRevoked(channel string) {
 	p := new(Packet)
 	p.PacketId = consts.ServerChannelRevoked
 
-	p.WriteData(helpers.GetBytes(channel, true))
+	helpers.WriteBytes(&p.buffer, channel, true)
 
 	pw.WritePacket(p)
 }
@@ -28,9 +28,9 @@ func (pw *PacketWriter) ChannelAvailableAutoJoin(channelName string, channelTopi
 	p := new(Packet)
 	p.PacketId = consts.ServerChannelAvailableAutojoin
 
-	p.WriteData(helpers.GetBytes(channelName, true))
-	p.WriteData(helpers.GetBytes(channelTopic, true))
-	p.WriteData(helpers.GetBytes(userCount))
+	helpers.WriteBytes(&p.buffer, channelName, true)
+	helpers.WriteBytes(&p.buffer, channelTopic, true)
+	helpers.WriteBytes(&p.buffer, userCount)
 
 	pw.WritePacket(p)
 }
@@ -39,9 +39,9 @@ func (pw *PacketWriter) ChannelAvailable(channelName string, channelTopic string
 	p := new(Packet)
 	p.PacketId = consts.ServerChannelAvailable
 
-	p.WriteData(helpers.GetBytes(channelName, true))
-	p.WriteData(helpers.GetBytes(channelTopic, true))
-	p.WriteData(helpers.GetBytes(userCount))
+	helpers.WriteBytes(&p.buffer, channelName, true)
+	helpers.WriteBytes(&p.buffer, channelTopic, true)
+	helpers.WriteBytes(&p.buffer, userCount)
 
 	pw.WritePacket(p)
 }
@@ -50,10 +50,11 @@ func (pw *PacketWriter) SendMessage(userName string, message string, target stri
 	p := new(Packet)
 	p.PacketId = consts.ServerSendMessage
 
-	p.WriteData(helpers.GetBytes(userName, true))
-	p.WriteData(helpers.GetBytes(message, true))
-	p.WriteData(helpers.GetBytes(target, true))
-	p.WriteData(helpers.GetBytes(senderId))
+
+	helpers.WriteBytes(&p.buffer, userName, true)
+	helpers.WriteBytes(&p.buffer, message, true)
+	helpers.WriteBytes(&p.buffer, target, true)
+	helpers.WriteBytes(&p.buffer, senderId)
 
 	pw.WritePacket(p)
 }

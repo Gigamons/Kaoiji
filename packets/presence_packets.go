@@ -27,7 +27,7 @@ func (pw *PacketWriter) LoginReply(reply consts.LoginReply) {
 	p := new(Packet)
 	p.PacketId = consts.ServerLoginReply
 
-	p.WriteData(helpers.GetBytes(int32(reply)))
+	helpers.WriteBytes(&p.buffer, int32(reply))
 
 	pw.WritePacket(p)
 }
@@ -36,7 +36,7 @@ func (pw *PacketWriter) PresenceBundle(list []int32) {
 	p := new(Packet)
 	p.PacketId = consts.ServerUserPresenceBundle
 
-	p.WriteData(helpers.GetBytes(list))
+	helpers.WriteBytes(&p.buffer, list)
 
 	pw.WritePacket(p)
 }
@@ -45,7 +45,7 @@ func (pw *PacketWriter) PresenceSingle(userId int32) {
 	p := new(Packet)
 	p.PacketId = consts.ServerUserPresenceSingle
 
-	p.WriteData(helpers.GetBytes(userId))
+	helpers.WriteBytes(&p.buffer, userId)
 
 	pw.WritePacket(p)
 }
@@ -54,7 +54,7 @@ func (pw *PacketWriter) FriendsList(list []int32) {
 	p := new(Packet)
 	p.PacketId = consts.ServerFriendsList
 
-	p.WriteData(helpers.GetBytes(list))
+	helpers.WriteBytes(&p.buffer, list)
 
 	pw.WritePacket(p)
 }
@@ -63,8 +63,8 @@ func (pw *PacketWriter) UserQuit(userId int32) {
 	p := new(Packet)
 	p.PacketId = consts.ServerHandleUserQuit
 
-	p.WriteData(helpers.GetBytes(userId))
-	p.WriteData(helpers.GetBytes(int32(0)))
+	helpers.WriteBytes(&p.buffer, userId)
+	helpers.WriteBytes(&p.buffer, int32(0))
 
 	pw.WritePacket(p)
 }
@@ -73,21 +73,22 @@ func (pw *PacketWriter) HandleUserStatsUpdate(userStatsUpdate *UserStatsUpdate) 
 	p := new(Packet)
 	p.PacketId = consts.ServerAnnounce
 
-	p.WriteData(helpers.GetBytes(userStatsUpdate.UserId))
+	helpers.WriteBytes(&p.buffer, userStatsUpdate.UserId)
+	helpers.WriteBytes(&p.buffer, userStatsUpdate.UserId)
 
-	p.WriteData(helpers.GetBytes(userStatsUpdate.Status))
-	p.WriteData(helpers.GetBytes(userStatsUpdate.StatusText, true))
-	p.WriteData(helpers.GetBytes(userStatsUpdate.BeatmapChecksum, true))
-	p.WriteData(helpers.GetBytes(userStatsUpdate.CurrentMods))
-	p.WriteData(helpers.GetBytes(userStatsUpdate.PlayMode))
-	p.WriteData(helpers.GetBytes(userStatsUpdate.BeatmapId))
+	helpers.WriteBytes(&p.buffer, userStatsUpdate.Status)
+	helpers.WriteBytes(&p.buffer, userStatsUpdate.StatusText, true)
+	helpers.WriteBytes(&p.buffer, userStatsUpdate.BeatmapChecksum, true)
+	helpers.WriteBytes(&p.buffer, userStatsUpdate.CurrentMods)
+	helpers.WriteBytes(&p.buffer, userStatsUpdate.PlayMode)
+	helpers.WriteBytes(&p.buffer, userStatsUpdate.BeatmapId)
 
-	p.WriteData(helpers.GetBytes(userStatsUpdate.RankedScore))
-	p.WriteData(helpers.GetBytes(userStatsUpdate.Accuracy))
-	p.WriteData(helpers.GetBytes(userStatsUpdate.PlayCount))
-	p.WriteData(helpers.GetBytes(userStatsUpdate.TotalScore))
-	p.WriteData(helpers.GetBytes(userStatsUpdate.Rank))
-	p.WriteData(helpers.GetBytes(userStatsUpdate.PP))
+	helpers.WriteBytes(&p.buffer, userStatsUpdate.RankedScore)
+	helpers.WriteBytes(&p.buffer, userStatsUpdate.Accuracy)
+	helpers.WriteBytes(&p.buffer, userStatsUpdate.PlayCount)
+	helpers.WriteBytes(&p.buffer, userStatsUpdate.TotalScore)
+	helpers.WriteBytes(&p.buffer, userStatsUpdate.Rank)
+	helpers.WriteBytes(&p.buffer, userStatsUpdate.PP)
 
 	pw.WritePacket(p)
 }

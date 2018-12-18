@@ -100,56 +100,56 @@ func (sf *SpectatorFrame) GetBytes() []byte {
 }
 
 func (s *ScoreFrame) WriteBytes(w io.Writer) error {
-	if _, err := w.Write(helpers.GetBytes(s.Time)); err != nil {
+	if err := helpers.WriteBytes(w, s.Time); err != nil {
 		return err
 	}
-	if _, err := w.Write(helpers.GetBytes(s.Id)); err != nil {
+	if err := helpers.WriteBytes(w, s.Id); err != nil {
 		return err
 	}
-	if _, err := w.Write(helpers.GetBytes(s.Count300)); err != nil {
+	if err := helpers.WriteBytes(w, s.Count300); err != nil {
 		return err
 	}
-	if _, err := w.Write(helpers.GetBytes(s.Count100)); err != nil {
+	if err := helpers.WriteBytes(w, s.Count100); err != nil {
 		return err
 	}
-	if _, err := w.Write(helpers.GetBytes(s.Count50)); err != nil {
+	if err := helpers.WriteBytes(w, s.Count50); err != nil {
 		return err
 	}
-	if _, err := w.Write(helpers.GetBytes(s.CountGeki)); err != nil {
+	if err := helpers.WriteBytes(w, s.CountGeki); err != nil {
 		return err
 	}
-	if _, err := w.Write(helpers.GetBytes(s.CountKatu)); err != nil {
+	if err := helpers.WriteBytes(w, s.CountKatu); err != nil {
 		return err
 	}
-	if _, err := w.Write(helpers.GetBytes(s.CountMiss)); err != nil {
+	if err := helpers.WriteBytes(w, s.CountMiss); err != nil {
 		return err
 	}
-	if _, err := w.Write(helpers.GetBytes(s.TotalScore)); err != nil {
+	if err := helpers.WriteBytes(w, s.TotalScore); err != nil {
 		return err
 	}
-	if _, err := w.Write(helpers.GetBytes(s.MaxCombo)); err != nil {
+	if err := helpers.WriteBytes(w, s.MaxCombo); err != nil {
 		return err
 	}
-	if _, err := w.Write(helpers.GetBytes(s.CurrentCombo)); err != nil {
+	if err := helpers.WriteBytes(w, s.CurrentCombo); err != nil {
 		return err
 	}
-	if _, err := w.Write(helpers.GetBytes(s.Perfect)); err != nil {
+	if err := helpers.WriteBytes(w, s.Perfect); err != nil {
 		return err
 	}
-	if _, err := w.Write(helpers.GetBytes(s.CurrentHp)); err != nil {
+	if err := helpers.WriteBytes(w, s.CurrentHp); err != nil {
 		return err
 	}
-	if _, err := w.Write(helpers.GetBytes(s.TagByte)); err != nil {
+	if err := helpers.WriteBytes(w, s.TagByte); err != nil {
 		return err
 	}
-	if _, err := w.Write(helpers.GetBytes(s.ScoreV2)); err != nil {
+	if err := helpers.WriteBytes(w, s.ScoreV2); err != nil {
 		return err
 	}
 	if s.ScoreV2 {
-		if _, err := w.Write(helpers.GetBytes(s.ComboPortion)); err != nil {
+		if err := helpers.WriteBytes(w, s.ComboPortion); err != nil {
 			return err
 		}
-		if _, err := w.Write(helpers.GetBytes(s.BonusPortion)); err != nil {
+		if err := helpers.WriteBytes(w, s.BonusPortion); err != nil {
 			return err
 		}
 	}
@@ -158,29 +158,29 @@ func (s *ScoreFrame) WriteBytes(w io.Writer) error {
 }
 
 func (r *ReplayFrame) WriteBytes(w io.Writer) error {
-	if _, err := w.Write(helpers.GetBytes(r.ButtonState)); err != nil {
+	if err := helpers.WriteBytes(w, r.ButtonState); err != nil {
 		return err
 	}
-	if _, err := w.Write(helpers.GetBytes(r.Button)); err != nil {
+	if err := helpers.WriteBytes(w, r.Button); err != nil {
 		return err
 	}
-	if _, err := w.Write(helpers.GetBytes(r.MouseX)); err != nil {
+	if err := helpers.WriteBytes(w, r.MouseX); err != nil {
 		return err
 	}
-	if _, err := w.Write(helpers.GetBytes(r.MouseY)); err != nil {
+	if err := helpers.WriteBytes(w, r.MouseY); err != nil {
 		return err
 	}
-	if _, err := w.Write(helpers.GetBytes(r.Time)); err != nil {
+	if err := helpers.WriteBytes(w, r.Time); err != nil {
 		return err
 	}
 	return nil
 }
 
 func (sf *SpectatorFrame) WriteBytes(w io.Writer) error {
-	if _, err := w.Write(helpers.GetBytes(sf.Extra)); err != nil {
+	if err := helpers.WriteBytes(w, sf.Extra); err != nil {
 		return err
 	}
-	if _, err := w.Write(helpers.GetBytes(uint16(len(sf.ReplayFrames)))); err != nil {
+	if err := helpers.WriteBytes(w, uint16(len(sf.ReplayFrames))); err != nil {
 		return err
 	}
 
@@ -190,10 +190,10 @@ func (sf *SpectatorFrame) WriteBytes(w io.Writer) error {
 		}
 	}
 
-	if _, err := w.Write(helpers.GetBytes(sf.Action)); err != nil {
+	if err := helpers.WriteBytes(w, sf.Action); err != nil {
 		return err
 	}
-	if _, err := w.Write(sf.ScoreFrame.GetBytes()); err != nil {
+	if err := sf.ScoreFrame.WriteBytes(w); err != nil {
 		return err
 	}
 
@@ -206,7 +206,7 @@ func (pw *PacketWriter) FellowSpectatorJoined(userId int32) {
 	p := new(Packet)
 	p.PacketId = consts.ServerFellowSpectatorJoined
 
-	p.WriteData(helpers.GetBytes(userId))
+	helpers.WriteBytes(&p.buffer, userId)
 
 	pw.WritePacket(p)
 }
@@ -215,7 +215,7 @@ func (pw *PacketWriter) FellowSpectatorLeft(userId int32) {
 	p := new(Packet)
 	p.PacketId = consts.ServerFellowSpectatorLeft
 
-	p.WriteData(helpers.GetBytes(userId))
+	helpers.WriteBytes(&p.buffer, userId)
 
 	pw.WritePacket(p)
 }
@@ -224,7 +224,7 @@ func (pw *PacketWriter) SpectatorJoined(userId int32) {
 	p := new(Packet)
 	p.PacketId = consts.ServerSpectatorJoined
 
-	p.WriteData(helpers.GetBytes(userId))
+	helpers.WriteBytes(&p.buffer, userId)
 
 	pw.WritePacket(p)
 }
@@ -233,7 +233,7 @@ func (pw *PacketWriter) SpectatorLeft(userId int32) {
 	p := new(Packet)
 	p.PacketId = consts.ServerSpectatorLeft
 
-	p.WriteData(helpers.GetBytes(userId))
+	helpers.WriteBytes(&p.buffer, userId)
 
 	pw.WritePacket(p)
 }
@@ -242,7 +242,7 @@ func (pw *PacketWriter) SpectatorCantSpectate(userId int32) {
 	p := new(Packet)
 	p.PacketId = consts.ServerSpectatorCantSpectate
 
-	p.WriteData(helpers.GetBytes(userId))
+	helpers.WriteBytes(&p.buffer, userId)
 
 	pw.WritePacket(p)
 }
