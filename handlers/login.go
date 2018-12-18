@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"github.com/Gigamons/Kaoiji/packets"
 	"github.com/valyala/fasthttp"
 )
@@ -19,8 +18,6 @@ func login_request(ctx *fasthttp.RequestCtx) {
 	pw := packets.PacketWriter{}
 	pw.LoginReply(-1)
 	pw.Announce("Hello Golang")
-
-	if err := pw.WriteBytes(ctx); err != nil {
-		fmt.Println(err)
-	}
+	
+	ctx.Write(pw.GetBytes())
 }

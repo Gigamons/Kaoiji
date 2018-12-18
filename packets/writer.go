@@ -2,8 +2,6 @@ package packets
 
 import (
 	"bytes"
-	"fmt"
-	"io"
 )
 
 type PacketWriter struct {
@@ -18,22 +16,9 @@ func (pw *PacketWriter) GetBytes() []byte {
 	buffer := new(bytes.Buffer)
 
 	for _, packet := range pw.packetList {
-		err := packet.WriteBytes(buffer)
-		if err != nil {
-			fmt.Println(err)
-			return nil
-		}
+		buffer.Write(packet.GetBytes())
 	}
+
 
 	return buffer.Bytes()
-}
-
-func (pw *PacketWriter) WriteBytes(w io.Writer) (err error) {
-	for _, packet := range pw.packetList {
-		if err = packet.WriteBytes(w); err != nil {
-			return
-		}
-	}
-
-	return
 }

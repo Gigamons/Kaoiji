@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"github.com/Gigamons/Kaoiji/consts"
 	"github.com/Gigamons/Shared/shelpers"
-	"io"
 )
 
 type Packet struct {
@@ -25,21 +24,4 @@ func (p *Packet) GetBytes() []byte {
 	buffer.Write(p.buffer.Bytes())
 
 	return buffer.Bytes()
-}
-
-func (p *Packet) WriteBytes(w io.Writer) (err error) {
-	if err = shelpers.WriteBytes(w, uint16(p.PacketId)); err != nil {
-		return
-	}
-	if err = shelpers.WriteBytes(w, uint8(0)); err != nil {
-		return
-	}
-	if err = shelpers.WriteBytes(w, int32(p.buffer.Len())); err != nil {
-		return
-	}
-	if err = shelpers.WriteBytes(w, p.buffer.Bytes()); err != nil {
-		return
-	}
-
-	return
 }
