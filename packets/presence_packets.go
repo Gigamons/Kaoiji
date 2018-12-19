@@ -23,6 +23,18 @@ type UserStatsUpdate struct {
 	PP              int16
 }
 
+type UserPresence struct {
+	UserId           int32
+	UserName         string
+
+	Timezone         uint8
+	CountryId        uint8
+	ClientPermission int32
+	Lon              float32
+	Lat              float32
+	Rank             int32
+}
+
 func (pw *PacketWriter) LoginReply(reply consts.LoginReply) {
 	p := new(Packet)
 	p.PacketId = consts.ServerLoginReply
@@ -46,6 +58,22 @@ func (pw *PacketWriter) PresenceSingle(userId int32) {
 	p.PacketId = consts.ServerUserPresenceSingle
 
 	shelpers.WriteBytes(&p.buffer, userId)
+
+	pw.WritePacket(p)
+}
+
+func (pw *PacketWriter) Presence(pr UserPresence) {
+	p := new(Packet)
+	p.PacketId = consts.ServerUserPresenceSingle
+
+	shelpers.WriteBytes(&p.buffer, pr.UserId)
+	shelpers.WriteBytes(&p.buffer, pr.UserName, true)
+	shelpers.WriteBytes(&p.buffer, pr.Timezone)
+	shelpers.WriteBytes(&p.buffer, pr.CountryId)
+	shelpers.WriteBytes(&p.buffer, pr.ClientPermission)
+	shelpers.WriteBytes(&p.buffer, pr.Lon)
+	shelpers.WriteBytes(&p.buffer, pr.Lat)
+	shelpers.WriteBytes(&p.buffer, pr.Rank)
 
 	pw.WritePacket(p)
 }

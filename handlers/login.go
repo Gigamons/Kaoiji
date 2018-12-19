@@ -6,7 +6,6 @@ import (
 	"github.com/Gigamons/Kaoiji/helpers"
 	"github.com/Gigamons/Kaoiji/objects"
 	"github.com/Gigamons/Kaoiji/packets"
-	"github.com/Gigamons/Shared/shelpers"
 	"github.com/Gigamons/Shared/sutilities"
 	"github.com/valyala/fasthttp"
 )
@@ -37,9 +36,7 @@ func login_request(ctx *fasthttp.RequestCtx) {
 		return
 	}
 	if userId <= 0 {
-		pw.LoginReply(consts.LoginFailed)
-		pw.Announce("This Username doesn't exists!")
-		ctx.Write(pw.GetBytes())
+		login_failed(ctx, "This Username doesn't exists!")
 		return
 	}
 
@@ -56,16 +53,27 @@ func login_request(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	if user.Password != shelpers.Generate_Hash(loginRequest.PassMD5) {
-		pw.LoginReply(consts.LoginFailed)
-		pw.Announce("This Password is incorrect!")
-		ctx.Write(pw.GetBytes())
+	if !user.IsPassword(loginRequest.PassMD5) {
+		login_failed(ctx, "This Password is incorrect!")
 		return
 	}
-	
-	pw.LoginReply(-1)
-	pw.Announce("Hello Golang")
 
+	presence.User = user
+	presence.UserStatus, err = sutilities.GetUserStatus(user.Id)
+	if err != nil {
+		login_exception(ctx)
+		fmt.Println(err)
+		return
+	}
+	presence.UTCOffset = loginRequest.UTCOffset
+
+
+	/* TODO: Check for ban, get country, setup leaderboard */
+	pw.LoginReply(consts.LoginReply(user.Id))
+	pw.Presence(presence.GetUserPresence())
+
+
+	objects.AppendPresence(presence)
 	ctx.Write(pw.GetBytes())
 }
 
@@ -78,5 +86,12 @@ func login_exception(ctx *fasthttp.RequestCtx) {
 func login_outdated(ctx *fasthttp.RequestCtx) {
 	pw := packets.PacketWriter{}
 	pw.LoginReply(consts.LoginClientOutdated)
+	ctx.Write(pw.GetBytes())
+}
+
+func login_failed(ctx *fasthttp.RequestCtx, msg string) {
+	pw := packets.PacketWriter{}
+	pw.LoginReply(consts.LoginClientOutdated)
+	pw.Announce(msg)
 	ctx.Write(pw.GetBytes())
 }

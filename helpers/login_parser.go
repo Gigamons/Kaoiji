@@ -10,7 +10,7 @@ type LoginRequest struct {
 	PassMD5           string
 
 	OsuBuild          string
-	UTCOffset         int
+	UTCOffset         uint8
 	DisplayLocation   bool
 	SecurityHash      string
 	BlockNonFriendsDM bool
@@ -37,10 +37,11 @@ func ParseLoginRequest(body []byte) *LoginRequest {
 	var err error = nil
 
 	retVal.OsuBuild = lines[0]
-	retVal.UTCOffset, err = strconv.Atoi(lines[1])
+	x, err := strconv.Atoi(lines[1])
 	if err != nil {
 		return nil
 	}
+	retVal.UTCOffset = uint8(x)
 
 	retVal.DisplayLocation, err = strconv.ParseBool(lines[2])
 	if err != nil {
